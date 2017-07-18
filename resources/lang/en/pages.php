@@ -34,7 +34,8 @@ return [
     'register.password' => 'Password',
     'register.passwordconfirm' => 'Confirm Password',
     'register.register' => 'Register',
-    
+    'register.captcha' => 'Code from picture',
+
     'reset.description' => 'Reset your password here - Strucko IT Dictionary',
     'reset.title' => 'Password reset',
     'reset.reset' => 'Reset Password',

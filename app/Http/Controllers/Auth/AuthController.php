@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\User;
+use Gregwar\Captcha\CaptchaBuilder;
 use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
@@ -70,6 +71,7 @@ class AuthController extends Controller
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users',
             'password' => 'required|confirmed|min:6',
+            'captcha' => 'in:' . session('captcha')
         ]);
     }
 
@@ -87,7 +89,16 @@ class AuthController extends Controller
             'password' => bcrypt($data['password']),
         ]);
     }
-    
+
+    public function getRegister()
+    {
+        $captcha = (new CaptchaBuilder())->build();
+
+        session(['captcha' => $captcha->getPhrase()]);
+
+        return view('auth.register', compact('captcha'));
+    }
+
     /**
      * Handle a registration request for the application.
      *

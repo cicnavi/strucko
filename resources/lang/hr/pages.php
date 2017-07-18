@@ -34,7 +34,8 @@ return [
     'register.password' => 'Lozinka',
     'register.passwordconfirm' => 'Potvrdite lozinku',
     'register.register' => 'Registriraj se',
-    
+    'register.captcha' => 'Kod sa slike',
+
     'reset.description' => 'Resetirajte svoju lozinku ovdje - Stručko informatički rječnik',
     'reset.title' => 'Resetiranje lozinke',
     'reset.reset' => 'Resetiraj lozinku',

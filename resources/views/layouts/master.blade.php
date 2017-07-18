@@ -11,7 +11,7 @@
         
         <title>@yield('title') - {{ trans('header.logo') }}</title>
         
-        <link rel="stylesheet" href="/css/app.css">
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
         @include('layouts.cookie_consent')
         
@@ -53,7 +53,7 @@
         </div> <!-- /container -->
 
 
-        <script type="text/javascript" src="/js/all.js"></script>
+        <script type="text/javascript" src="{{ asset('js/all.js') }}"></script>
         
     </body>
 </html>

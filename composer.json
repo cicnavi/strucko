@@ -11,7 +11,8 @@
         "illuminate/html": "^5.0",
         "sabre/xml": "^1.1",
         "league/csv": "^7.1",
-        "roumen/sitemap": "^2.5"
+        "roumen/sitemap": "^2.5",
+        "gregwar/captcha": "^1.1"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

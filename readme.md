@@ -21,7 +21,7 @@ can also include many more scientific fields, in addition to IT.
 Official Strucko web app is available here:  <http://strucko.com/>
 
 ## Installation and Usage
-Although Strucko is not built in order to be easily installed, you can still 
+Although Strucko is not built in order to be installed, you can still 
 run it on your own if you wish. Keep reading if you are interested...
 
 Strucko is built using [Laravel 5.1 PHP Framework](http://laravel.com/docs/5.1/).
@@ -35,37 +35,38 @@ If you use Netbeans IDE, take a look at [this article on how to easily run Larav
 
 In short, do this to get your copy of Strucko ready:
 * Clone this repository: 
- * *git clone https://github.com/cicnavi/strucko.git some_name*
+  * *git clone https://github.com/cicnavi/strucko.git some_name*
 * In your shell/cmd go to your new repo folder and run commands to get all dependencies:
- * *composer install*
- * *npm install*
+  * *composer install*
+  * *npm install*
+* In *public* folder, copy the 'htaccess-backup-laravel' file to '.htaccess' file (it is used by Apache web server.)
 * Create a MySQL database which will be used by your new app (or you can use different database, 
 check [Laravel database documentation](http://laravel.com/docs/5.1/database)).
 * Create a .env file in your root folder (make a new copy from .env.example) and enter username and pass for your database. Reffer to 
 [Environment Configuration](http://laravel.com/docs/5.1/installation#environment-configuration)
 on how to do that. For example, in your .env file you should have the following:
- * DB_HOST=localhost
- * DB_CONNECTION=mysql
- * DB_DATABASE=your_database_name
- * DB_USERNAME=your_database_username
- * DB_PASSWORD=your_database_password
+  * *DB_HOST=localhost*
+  * *DB_CONNECTION=mysql*
+  * *DB_DATABASE=your_database_name*
+  * *DB_USERNAME=your_database_username*
+  * *DB_PASSWORD=your_database_password*
 * Run command to generate your app key:
- * *php artisan key:generate*
+  * *php artisan key:generate*
 * Run command to create needed tables in your database:
- * *php artisan migrate*
+  * *php artisan migrate*
 * Run command to seed your database with default languages,
 scientific fields, part of speeches and default admin user 
 (you'll define email and password for admin user in the next step).
- * *php artisan db:seed*
+  * *php artisan db:seed*
 * The predefined email for admin user is 'admin@example.com'. You can change email and password for the admin user
 by entering commands:
- * *php artisan tinker*
- * *$user = App\User::where('email', 'admin@example.com')->firstOrFail();*
- * *$user->email = 'your_email@domain.com';*
- * *$user->password = bcrypt('your_password');*
- * *$user->verified = 1;*
- * *$user->save();*
- * *exit*
+  * *php artisan tinker*
+  * *$user = App\User::where('email', 'admin@example.com')->firstOrFail();*
+  * *$user->email = 'your_email@domain.com';*
+  * *$user->password = bcrypt('your_password');*
+  * *$user->verified = 1;*
+  * *$user->save();*
+  * *exit*
 * You can now run your new Strucko Dictionary. Make sure you review code in resources/views/layouts/master.blade.php, 
 resources/views/layouts/right.blade.php and resources/views/layouts/header.blade.php (by default, we show Google ads on http://strucko.com).
 

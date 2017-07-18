@@ -36,7 +36,17 @@
         <input type="password" id="password_confirmation" name="password_confirmation" 
                required="required" placeholder="{{ trans('pages.register.passwordconfirm') }}" class="form-control">
     </div>
-    
+
+    <div class="form-group">
+        <label for="captcha">{{ trans('pages.register.captcha') }}:</label>
+        <input type="text" id="captcha" name="captcha" required="required"
+               placeholder="{{ trans('pages.register.captcha') }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <img src="{!!  $captcha->inline() !!}"/>
+    </div>
+
     <div class="form-group">
         <button type="submit" id="submit" name="submit" 
                 class="btn btn-primary">
