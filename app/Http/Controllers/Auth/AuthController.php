@@ -87,6 +87,7 @@ class AuthController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
+            'request_data_on_registration' => $data['request_data_on_registration'],
         ]);
     }
 
@@ -107,6 +108,18 @@ class AuthController extends Controller
      */
     public function postRegister(Request $request, AppMailer $mailer)
     {
+        // $authUrl = action('Auth\AuthController@getRegister');
+        //dd($request->session()->get('_previous'));
+
+        $input = $request->all();
+        $requestData = [];
+        $requestData['session'] = $request->session()->all();
+        $requestData['input'] = $request->input();
+        $requestData['server'] = $request->server();
+        $requestData['cookie'] = $request->cookie();
+        $requestData['headers'] = $request->header();
+        $input['request_data_on_registration'] = json_encode($requestData);
+
         $validator = $this->validator($request->all());
 
         if ($validator->fails()) {
@@ -116,7 +129,7 @@ class AuthController extends Controller
         }
         
         // Create the user
-        $user = $this->create($request->all());
+        $user = $this->create($input);
         // Ok, we need to set the token. We could do this easily here and save the user,
         // but we'll use Model events for this to learn how that works. Check the 
         // boot() method on User model.
