@@ -2,13 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a1e49628-462b-41e6-968a-3af1e63cd0b3" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/php.xml" afterPath="$PROJECT_DIR$/.idea/php.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/strucko.iml" afterPath="$PROJECT_DIR$/.idea/strucko.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/composer.lock" afterPath="$PROJECT_DIR$/composer.lock" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/session.php" afterPath="$PROJECT_DIR$/config/session.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/views/layouts/master.blade.php" afterPath="$PROJECT_DIR$/resources/views/layouts/master.blade.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/views/terms/show.blade.php" afterPath="$PROJECT_DIR$/resources/views/terms/show.blade.php" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -43,53 +38,33 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="TermsFilterComposer.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/Http/ViewComposers/TermsFilterComposer.php">
+      <file leaf-file-name="show.blade.php" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/resources/views/terms/show.blade.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="master.blade.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/resources/views/layouts/master.blade.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="342">
-              <caret line="38" column="18" lean-forward="true" selection-start-line="38" selection-start-column="18" selection-end-line="38" selection-end-column="18" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="footer.blade.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/resources/views/layouts/footer.blade.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="header.blade.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/resources/views/layouts/header.blade.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="strucko.js" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/resources/assets/js/strucko.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="481">
+              <caret line="259" column="6" lean-forward="false" selection-start-line="259" selection-start-column="6" selection-end-line="259" selection-end-column="6" />
               <folding>
-                <element signature="n#!!doc" expanded="true" />
+                <marker date="1506517427901" expanded="true" signature="256:523" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="276:521" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="302:486" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="1148:1275" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="2728:2891" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="5896:6201" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="5916:6200" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="5942:6199" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="6909:7165" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="6929:7164" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="6954:7163" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="7328:7493" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="9702:9952" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="9722:9951" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="9747:9950" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="10180:10298" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="10200:10296" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="10435:10585" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="11528:11617" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="11548:11615" ph="..." />
+                <marker date="1506517427901" expanded="true" signature="11573:11614" ph="..." />
               </folding>
             </state>
           </provider>
@@ -129,6 +104,7 @@
         <option value="$PROJECT_DIR$/app/Http/Controllers/Auth/AuthController.php" />
         <option value="$PROJECT_DIR$/config/session.php" />
         <option value="$PROJECT_DIR$/resources/views/layouts/master.blade.php" />
+        <option value="$PROJECT_DIR$/resources/views/terms/show.blade.php" />
       </list>
     </option>
   </component>
@@ -287,14 +263,14 @@
               <item name="strucko" type="b2602c69:ProjectViewProjectNode" />
               <item name="strucko" type="2a2b976b:PhpTreeStructureProvider$1" />
               <item name="resources" type="2a2b976b:PhpTreeStructureProvider$1" />
-              <item name="assets" type="2a2b976b:PhpTreeStructureProvider$1" />
+              <item name="views" type="2a2b976b:PhpTreeStructureProvider$1" />
             </path>
             <path>
               <item name="strucko" type="b2602c69:ProjectViewProjectNode" />
               <item name="strucko" type="2a2b976b:PhpTreeStructureProvider$1" />
               <item name="resources" type="2a2b976b:PhpTreeStructureProvider$1" />
-              <item name="assets" type="2a2b976b:PhpTreeStructureProvider$1" />
-              <item name="js" type="2a2b976b:PhpTreeStructureProvider$1" />
+              <item name="views" type="2a2b976b:PhpTreeStructureProvider$1" />
+              <item name="terms" type="2a2b976b:PhpTreeStructureProvider$1" />
             </path>
           </expand>
           <select />
@@ -408,12 +384,12 @@
       <workItem from="1500364502562" duration="3782000" />
       <workItem from="1500368630188" duration="844000" />
       <workItem from="1500452928338" duration="4725000" />
-      <workItem from="1506508985428" duration="3195000" />
+      <workItem from="1506508985428" duration="3954000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="13744000" />
+    <option name="totallyTimeSpent" value="14503000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -459,25 +435,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/Http/routes.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1207">
-          <caret line="80" column="28" lean-forward="true" selection-start-line="80" selection-start-column="28" selection-end-line="80" selection-end-column="61" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/readme.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="306">
-            <caret line="18" column="32" lean-forward="false" selection-start-line="18" selection-start-column="32" selection-end-line="18" selection-end-column="32" />
-            <folding />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/User.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="493">
@@ -991,7 +948,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/Http/ViewComposers/TermsFilterComposer.php">
+    <entry file="file://$PROJECT_DIR$/resources/views/layouts/right.blade.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -999,7 +956,25 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/views/layouts/right.blade.php">
+    <entry file="file://$PROJECT_DIR$/app/Term.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/assets/js/strucko.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="31" column="17" lean-forward="false" selection-start-line="31" selection-start-column="17" selection-end-line="31" selection-end-column="17" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/views/layouts/header.blade.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -1023,7 +998,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/views/layouts/header.blade.php">
+    <entry file="file://$PROJECT_DIR$/app/Http/ViewComposers/TermsFilterComposer.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -1031,12 +1006,32 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/assets/js/strucko.js">
+    <entry file="file://$PROJECT_DIR$/resources/views/terms/show.blade.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="481">
+          <caret line="259" column="6" lean-forward="false" selection-start-line="259" selection-start-column="6" selection-end-line="259" selection-end-column="6" />
           <folding>
-            <element signature="n#!!doc" expanded="true" />
+            <marker date="1506517427901" expanded="true" signature="256:523" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="276:521" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="302:486" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="1148:1275" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="2728:2891" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="5896:6201" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="5916:6200" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="5942:6199" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="6909:7165" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="6929:7164" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="6954:7163" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="7328:7493" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="9702:9952" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="9722:9951" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="9747:9950" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="10180:10298" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="10200:10296" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="10435:10585" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="11528:11617" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="11548:11615" ph="..." />
+            <marker date="1506517427901" expanded="true" signature="11573:11614" ph="..." />
           </folding>
         </state>
       </provider>

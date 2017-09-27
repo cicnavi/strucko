@@ -254,13 +254,9 @@
        href="{{ resolveUrlAsAction('TermsController@edit', ['slug' =>
                     $term->slug]) }}">{{ trans('terms.show.edit') }}</a>
     @include('terms.suggestions')
-    @include('shared.disqus_show_term_user')
+
 @elseif(Auth::check())
     @include('terms.suggestions')
-    @include('shared.disqus_show_term_user')
-@endif
-@if (Auth::guest())
-    @include('shared.disqus_show_term_guest')
 @endif
 
 @endsection

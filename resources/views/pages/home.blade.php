@@ -46,15 +46,7 @@
             <h2>{{trans('home.header3')}}</h2>
             {!!  trans('home.introduction') !!}
         </article>
-        @if(getenv('APP_ENV')=='production')
-            <hr>
-            <section>
-                @include('shared.disqus', [
-                    'url' => action('PagesController@getHome'),
-                    'identifier' => 'home'
-                ])
-            </section>
-        @endif
+
     </div>
 </div>
 @endsection
