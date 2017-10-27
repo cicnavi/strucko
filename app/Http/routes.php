@@ -21,6 +21,9 @@ Route::get('/about', 'PagesController@getAbout');
 Route::get('/test', 'PagesController@getTest');
 get('contact', 'PagesController@getContact');
 
+// Settings
+post('/settings', 'SettingsController@set');
+
 // Users
 get('users/stats', 'UsersController@getStats');
 get('users', 'UsersController@getIndex');

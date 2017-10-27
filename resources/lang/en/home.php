@@ -23,6 +23,7 @@ return [
     'form.language.choose.english' => 'English',
     'form.language.choose.croatian' => 'Croatian',
     'form.search' => 'Search',
+    'form.set' => 'Set',
     'header2' => 'Latest terms',
     'header3' => 'Introducing Strucko - IT Dictionary',
     'introduction' => "

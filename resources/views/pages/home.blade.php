@@ -9,9 +9,14 @@
     <div class="col-xs-12">
         <article>
             <h2>{{trans('home.header1')}}</h2>
+            @if ( ! session()->has('settings') )
             <div class="row">
-                @include('layouts.filter_home')
+                @include('settings.form')
             </div>
+            @else
+                TODO mivanci postavke postavljene
+                {!! var_dump(session('settings')) !!}
+            @endif
         </article>
         <article>
             <h2>{{ trans('home.header2') }}</h2>

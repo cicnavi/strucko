@@ -103,6 +103,9 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+    	'language_id' => 'Language',
+	    'translate_to' => 'Translate to',
+    ],
 
 ];

@@ -24,6 +24,7 @@ return [
     'form.language.choose.english' => 'Engleski',
     'form.language.choose.croatian' => 'Hrvatski',
     'form.search' => 'Traži',
+    'form.set' => 'Postavi',
     'header2' => 'Novi pojmovi',
     'header3' => 'Predstavljamo Stručko - Informatički rječnik',
     'introduction' => "

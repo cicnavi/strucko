@@ -103,6 +103,11 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+	    'attributes' => [
+		    'language_id' => 'Jezik',
+		    'translate_to' => 'Prevedi na',
+	    ],
+    ],
 
 ];
