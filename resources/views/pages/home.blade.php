@@ -14,8 +14,7 @@
                 @include('settings.form')
             </div>
             @else
-                TODO mivanci postavke postavljene
-                {!! var_dump(session('settings')) !!}
+                @include('layouts.filter_home')
             @endif
         </article>
         <article>

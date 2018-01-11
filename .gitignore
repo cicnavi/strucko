@@ -4,4 +4,4 @@ Homestead.yaml
 .env
 /nbproject/private/
 public/.htaccess*
-/.idea
+.idea

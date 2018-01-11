@@ -1,5 +1,5 @@
 <div class="well">
-    <form method="GET" action="/terms" class="form-horizontal">
+    <form method="GET" action="{{ action('TermsController@index') }}" class="form-horizontal">
         <div class="form-group">
             <label for="language_id" class="col-sm-2 control-label">{{ trans('home.form.term') }}</label>
             <div class="col-sm-10">
