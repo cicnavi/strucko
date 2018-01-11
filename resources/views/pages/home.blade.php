@@ -9,13 +9,7 @@
     <div class="col-xs-12">
         <article>
             <h2>{{trans('home.header1')}}</h2>
-            @if ( ! session()->has('settings') )
-            <div class="row">
-                @include('settings.form')
-            </div>
-            @else
-                @include('layouts.filter_home')
-            @endif
+            @include('layouts.filter_home')
         </article>
         <article>
             <h2>{{ trans('home.header2') }}</h2>
