@@ -10,7 +10,9 @@ class LanguageController extends Controller
 {
     public function index()
     {
-    	$languages = Language::where('active', true)->get()->keyBy('id');
+    	$languages = Language::where('active', true)
+	                         ->orderBy('ref_name')
+	                         ->get();
 
 		return response()->json($languages);
     }

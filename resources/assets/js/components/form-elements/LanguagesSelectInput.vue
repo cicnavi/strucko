@@ -16,8 +16,6 @@
         name: "languages-select-input",
         data: function () {
             return {
-                selectedLanguage: 'eng',
-                languages: [{id: 0, ref_name: 'Please wait as we load languages...'}],
                 answer: ''
             }
         },
@@ -49,21 +47,10 @@
                 // This is the number of milliseconds we wait for the
                 // user to stop typing.
                 500
-            )
-        },
-
-
-        created: function () {
-
-            let languageSelectInput = this;
-
-            axios.get('/strucko2/api/v1/languages')
-                .then(function (response) {
-                    languageSelectInput.languages = response.data;
-                })
-                .catch(function (error) {
-                    languageSelectInput.languages = [{id: 0, ref_name: 'Could not get lanugages...'}];
-                })
+            ),
+            languages() {
+                return this.$store.state.languages;
+            }
         }
 
 

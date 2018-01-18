@@ -1,7 +1,7 @@
 <template>
     <div :id="name">
-        <form>
-
+        <p>Languages loaded: {{ languagesLoaded }}</p>
+        <form v-if="languagesLoaded">
             <languages-select-input selected="eng"></languages-select-input>
 
             <languages-select-input selected="hrv"></languages-select-input>
@@ -19,6 +19,9 @@
 
             <button type="submit" class="btn btn-primary">Search</button>
         </form>
+        <div v-else>
+            Languages are being loaded.
+        </div>
     </div>
 </template>
 
@@ -33,8 +36,14 @@
                 languageId: null
             }
         },
+
         components: {
             LanguagesSelectInput
+        },
+        computed: {
+            languagesLoaded() {
+                return this.$store.state.languagesLoaded;
+            }
         }
     }
 </script>
