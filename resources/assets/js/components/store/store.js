@@ -18,17 +18,19 @@ export const store = new Vuex.Store({
     },
     actions: {
         setLanguages(context){
+            // First we will try to get languages from IDB.
             if ( idb ) {
-                // indexDB exists, so we will try and use it.
+
                 let openDBRequest = idb.open();
 
                 openDBRequest.onsuccess = function(openDatabaseEvent) {
-                    // Open object store for languages.
+                    // Save DB instance.
                     let db = openDatabaseEvent.target.result;
+                    // Save object store for timestamps.
                     let timestampsObjectStore = db.transaction('timestamps', 'readonly').objectStore('timestamps');
-
+                    // Save current timestamp so we can compare it to the one from the store.
                     const currentTimestamp = new Date();
-
+                    // Get the timestamp for the languages (when the languages were lastly updated).
                     const languagesTimestampRequest = timestampsObjectStore.get('languages');
 
                     languagesTimestampRequest.onerror = function () {
@@ -36,15 +38,22 @@ export const store = new Vuex.Store({
                     };
 
                     languagesTimestampRequest.onsuccess = function (event) {
-                        const languagesTimestamp = new Date(event.target.result.value);
+                        // Store the actual value and make new Date instance from it.
+                        let languagesTimestamp = null;
+                        if (event.target.result) {
+                            languagesTimestamp = new Date(event.target.result.value);
+                        }
+                        // We will store languages in IDB on a daily basis. So, if the IDB date is different
+                        // from current date, update languages from the API.
                         if ( ! languagesTimestamp || languagesTimestamp.getDate() != currentTimestamp.getDate() ) {
                             context.dispatch('getLanguagesFromApi');
                         } else {
-                            // If there are some languages, use them instead of getting them from api.
+                            // Check if there are any languages in the IDB.
                             let languagesObjectStore = db.transaction('languages', 'readonly').objectStore('languages');
                             let countRequest = languagesObjectStore.count();
                             countRequest.onsuccess = function(countEvent) {
-                                if (countEvent.target.result > 0) {
+                                // If there is at least two languages, use them.
+                                if (countEvent.target.result > 1) {
                                     console.log('Getting languages from IDB');
                                     let idbLanguages = [];
                                     countEvent.target.source.openCursor().onsuccess = function (openCursorEvent) {
@@ -57,8 +66,8 @@ export const store = new Vuex.Store({
                                             context.commit('setLanguages', {languages: idbLanguages});
                                         }
                                     }
-                                }
-                                else {
+                                } else {
+                                    // There is not enough languages in the store.
                                     context.dispatch('getLanguagesFromApi');
                                 }
                             }
@@ -70,6 +79,7 @@ export const store = new Vuex.Store({
                     context.dispatch('getLanguagesFromApi');
                 }
             } else {
+                // IDB is not available, so get the languages from API.
                 context.dispatch('getLanguagesFromApi');
             }
         },
@@ -79,23 +89,28 @@ export const store = new Vuex.Store({
 
             axios.get('api/v1/languages')
                 .then(function (response) {
+                    // Save languages to the store.
                     context.commit('setLanguages', {languages: response.data});
 
-                    if (idb) {
+                    // If IDB is available, save the languages to it.
+                    if ( idb ) {
                         let openDBRequest = idb.open();
                         openDBRequest.onsuccess = function(event) {
                             console.log('Storing languages in IDB');
                             let db = event.target.result;
                             let languagesObjectStore = db.transaction('languages', 'readwrite').objectStore('languages');
+                            // First clear existing data.
                             languagesObjectStore.clear().onsuccess = function (event) {
+                                // Now add languages from the API to the IDB.
                                 const objectStore  = event.target.source;
                                 for (const language of response.data) {
                                     objectStore.add(language);
                                 }
                             };
 
+                            // Update the timestamp so we know when we have updated languages in IDB.
                             let timestampsObjectStore = db.transaction('timestamps', 'readwrite').objectStore('timestamps');
-                            timestampsObjectStore.put({id: 'languages', value: new Date()});
+                            timestampsObjectStore.put({id: 'languages', value: new Date().toISOString()});
                         };
                     }
                 })

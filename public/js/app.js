@@ -43244,17 +43244,19 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
     },
     actions: {
         setLanguages: function setLanguages(context) {
+            // First we will try to get languages from IDB.
             if (__WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */]) {
-                // indexDB exists, so we will try and use it.
+
                 var openDBRequest = __WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */].open();
 
                 openDBRequest.onsuccess = function (openDatabaseEvent) {
-                    // Open object store for languages.
+                    // Save DB instance.
                     var db = openDatabaseEvent.target.result;
+                    // Save object store for timestamps.
                     var timestampsObjectStore = db.transaction('timestamps', 'readonly').objectStore('timestamps');
-
+                    // Save current timestamp so we can compare it to the one from the store.
                     var currentTimestamp = new Date();
-
+                    // Get the timestamp for the languages (when the languages were lastly updated).
                     var languagesTimestampRequest = timestampsObjectStore.get('languages');
 
                     languagesTimestampRequest.onerror = function () {
@@ -43262,15 +43264,22 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
                     };
 
                     languagesTimestampRequest.onsuccess = function (event) {
-                        var languagesTimestamp = new Date(event.target.result.value);
+                        // Store the actual value and make new Date instance from it.
+                        var languagesTimestamp = null;
+                        if (event.target.result) {
+                            languagesTimestamp = new Date(event.target.result.value);
+                        }
+                        // We will store languages in IDB on a daily basis. So, if the IDB date is different
+                        // from current date, update languages from the API.
                         if (!languagesTimestamp || languagesTimestamp.getDate() != currentTimestamp.getDate()) {
                             context.dispatch('getLanguagesFromApi');
                         } else {
-                            // If there are some languages, use them instead of getting them from api.
+                            // Check if there are any languages in the IDB.
                             var languagesObjectStore = db.transaction('languages', 'readonly').objectStore('languages');
                             var countRequest = languagesObjectStore.count();
                             countRequest.onsuccess = function (countEvent) {
-                                if (countEvent.target.result > 0) {
+                                // If there is at least two languages, use them.
+                                if (countEvent.target.result > 1) {
                                     console.log('Getting languages from IDB');
                                     var idbLanguages = [];
                                     countEvent.target.source.openCursor().onsuccess = function (openCursorEvent) {
@@ -43283,6 +43292,7 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
                                         }
                                     };
                                 } else {
+                                    // There is not enough languages in the store.
                                     context.dispatch('getLanguagesFromApi');
                                 }
                             };
@@ -43294,6 +43304,7 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
                     context.dispatch('getLanguagesFromApi');
                 };
             } else {
+                // IDB is not available, so get the languages from API.
                 context.dispatch('getLanguagesFromApi');
             }
         },
@@ -43302,15 +43313,19 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
             console.log('Getting languages from API');
 
             axios.get('api/v1/languages').then(function (response) {
+                // Save languages to the store.
                 context.commit('setLanguages', { languages: response.data });
 
+                // If IDB is available, save the languages to it.
                 if (__WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */]) {
                     var openDBRequest = __WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */].open();
                     openDBRequest.onsuccess = function (event) {
                         console.log('Storing languages in IDB');
                         var db = event.target.result;
                         var languagesObjectStore = db.transaction('languages', 'readwrite').objectStore('languages');
+                        // First clear existing data.
                         languagesObjectStore.clear().onsuccess = function (event) {
+                            // Now add languages from the API to the IDB.
                             var objectStore = event.target.source;
                             var _iteratorNormalCompletion = true;
                             var _didIteratorError = false;
@@ -43338,8 +43353,9 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
                             }
                         };
 
+                        // Update the timestamp so we know when we have updated languages in IDB.
                         var timestampsObjectStore = db.transaction('timestamps', 'readwrite').objectStore('timestamps');
-                        timestampsObjectStore.put({ id: 'languages', value: new Date() });
+                        timestampsObjectStore.put({ id: 'languages', value: new Date().toISOString() });
                     };
                 }
             }).catch(function (error) {
@@ -44918,22 +44934,31 @@ if (false) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return idb; });
+// let idb be null for start.
 var idb = null;
 
+// If indexedDB is available, we will make new idb instance.
 if (window.indexedDB) {
     idb = {
+        /**
+         * Open IDB database.
+         *
+         * @returns {IDBOpenDBRequest}
+         */
         open: function open() {
             var db = window.indexedDB.open("strucko", 1);
 
+            // The structure of the database. Update as needed.
             db.onupgradeneeded = function (event) {
                 // Save the IDBDatabase interface
                 var db = event.target.result;
                 console.log('IDB needs update to version ' + db.version);
                 switch (db.version) {
                     case 1:
+                        // Languages store will keep all languages available in the app.
                         var objectStore = db.createObjectStore("languages", { keyPath: "id" });
                         objectStore.createIndex('id', 'id', { unique: true });
-
+                        // Timestamps will store time when the particular object store has been updated.
                         db.createObjectStore("timestamps", { keyPath: "id" });
                 }
             };
