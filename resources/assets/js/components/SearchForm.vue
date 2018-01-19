@@ -1,10 +1,9 @@
 <template>
     <div :id="name">
-        <p>Languages loaded: {{ languagesLoaded }}</p>
         <form v-if="languagesLoaded">
-            <languages-select-input selected="eng"></languages-select-input>
+            <languages-select-input defaultLanguage="eng"></languages-select-input>
 
-            <languages-select-input selected="hrv"></languages-select-input>
+            <languages-select-input defaultLanguage="hrv"></languages-select-input>
 
             <div class="form-group">
                 <input type="text"
@@ -20,7 +19,8 @@
             <button type="submit" class="btn btn-primary">Search</button>
         </form>
         <div v-else>
-            Languages are being loaded.
+            <p class="text-center">Please wait as we prepare data...</p>
+            <div class="loader"></div>
         </div>
     </div>
 </template>
@@ -49,5 +49,18 @@
 </script>
 
 <style scoped>
+    .loader {
+        margin: 0 auto;
+        border: 16px solid #f3f3f3; /* Light grey */
+        border-top: 16px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+    }
 
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>

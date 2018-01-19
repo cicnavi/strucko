@@ -1,7 +1,7 @@
 <template>
     <div class="form-group">
 
-        <select class="form-control" v-model="selected">
+        <select class="form-control" v-model="selectedLanguage">
 
             <option value="" disabled>Select language</option>
             <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
@@ -16,10 +16,11 @@
         name: "languages-select-input",
         data: function () {
             return {
-                answer: ''
+                answer: '',
+                selectedLanguage: this.defaultLanguage
             }
         },
-        props: ['selected'],
+        props: ['defaultLanguage'],
         computed: {
             // _.debounce is a function provided by lodash to limit how
             // often a particularly expensive operation can be run.

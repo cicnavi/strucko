@@ -44396,7 +44396,7 @@ exports = module.exports = __webpack_require__(12)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n.loader[data-v-48df5743] {\n    margin: 0 auto;\n    border: 16px solid #f3f3f3; /* Light grey */\n    border-top: 16px solid #3498db; /* Blue */\n    border-radius: 50%;\n    width: 120px;\n    height: 120px;\n    -webkit-animation: spin-data-v-48df5743 2s linear infinite;\n            animation: spin-data-v-48df5743 2s linear infinite;\n}\n@-webkit-keyframes spin-data-v-48df5743 {\n0% { -webkit-transform: rotate(0deg); transform: rotate(0deg);\n}\n100% { -webkit-transform: rotate(360deg); transform: rotate(360deg);\n}\n}\n@keyframes spin-data-v-48df5743 {\n0% { -webkit-transform: rotate(0deg); transform: rotate(0deg);\n}\n100% { -webkit-transform: rotate(360deg); transform: rotate(360deg);\n}\n}\n", ""]);
 
 // exports
 
@@ -44577,7 +44577,7 @@ exports = module.exports = __webpack_require__(12)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -44608,10 +44608,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     name: "languages-select-input",
     data: function data() {
         return {
-            answer: ''
+            answer: '',
+            selectedLanguage: this.defaultLanguage
         };
     },
-    props: ['selected'],
+    props: ['defaultLanguage'],
     computed: {
         // _.debounce is a function provided by lodash to limit how
         // often a particularly expensive operation can be run.
@@ -44659,8 +44660,8 @@ var render = function() {
           {
             name: "model",
             rawName: "v-model",
-            value: _vm.selected,
-            expression: "selected"
+            value: _vm.selectedLanguage,
+            expression: "selectedLanguage"
           }
         ],
         staticClass: "form-control",
@@ -44674,7 +44675,7 @@ var render = function() {
                 var val = "_value" in o ? o._value : o.value
                 return val
               })
-            _vm.selected = $event.target.multiple
+            _vm.selectedLanguage = $event.target.multiple
               ? $$selectedVal
               : $$selectedVal[0]
           }
@@ -44714,15 +44715,13 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { attrs: { id: _vm.name } }, [
-    _c("p", [_vm._v("Languages loaded: " + _vm._s(_vm.languagesLoaded))]),
-    _vm._v(" "),
     _vm.languagesLoaded
       ? _c(
           "form",
           [
-            _c("languages-select-input", { attrs: { selected: "eng" } }),
+            _c("languages-select-input", { attrs: { defaultLanguage: "eng" } }),
             _vm._v(" "),
-            _c("languages-select-input", { attrs: { selected: "hrv" } }),
+            _c("languages-select-input", { attrs: { defaultLanguage: "hrv" } }),
             _vm._v(" "),
             _c("div", { staticClass: "form-group" }, [
               _c("input", {
@@ -44771,7 +44770,13 @@ var render = function() {
           ],
           1
         )
-      : _c("div", [_vm._v("\n        Languages are being loaded.\n    ")])
+      : _c("div", [
+          _c("p", { staticClass: "text-center" }, [
+            _vm._v("Please wait as we prepare data...")
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "loader" })
+        ])
   ])
 }
 var staticRenderFns = []
