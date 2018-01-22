@@ -1,8 +1,7 @@
 <template>
     <div class="form-group">
-
+        <slot name="label"></slot>
         <select class="form-control" v-model="selectedLanguage">
-
             <option value="" disabled>Select language</option>
             <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
         </select>

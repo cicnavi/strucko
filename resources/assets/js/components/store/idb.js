@@ -20,15 +20,16 @@ if (window.indexedDB) {
                 switch (db.version) {
                     case 1:
                         // Languages store will keep all languages available in the app.
-                        let objectStore = db.createObjectStore("languages", { keyPath: "id" });
-                        objectStore.createIndex('id', 'id', {unique: true});
+                        let languagesStore = db.createObjectStore("languages", { keyPath: "id" });
+                        languagesStore.createIndex('id', 'id', {unique: true});
+                        languagesStore.createIndex('ref_name', 'ref_name', {unique: true});
                         // Timestamps will store time when the particular object store has been updated.
-                        db.createObjectStore("timestamps", {keyPath: "id"});
+                        let timestampsStore = db.createObjectStore("timestamps", {keyPath: "id"});
                 }
             };
 
             db.onerror = function(event) {
-                Console.log('Oups, could not use IndexDB');
+                console.log('Oups, could not use IndexDB');
             };
 
             return db;

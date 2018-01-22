@@ -56,7 +56,7 @@ export const store = new Vuex.Store({
                                 if (countEvent.target.result > 1) {
                                     console.log('Getting languages from IDB');
                                     let idbLanguages = [];
-                                    countEvent.target.source.openCursor().onsuccess = function (openCursorEvent) {
+                                    languagesObjectStore.index('ref_name').openCursor().onsuccess = function (openCursorEvent) {
                                         let cursor = openCursorEvent.target.result;
                                         if (cursor) {
                                             idbLanguages.push(cursor.value);
@@ -92,9 +92,11 @@ export const store = new Vuex.Store({
                     // Save languages to the store.
                     context.commit('setLanguages', {languages: response.data});
 
+
                     // If IDB is available, save the languages to it.
                     if ( idb ) {
                         let openDBRequest = idb.open();
+
                         openDBRequest.onsuccess = function(event) {
                             console.log('Storing languages in IDB');
                             let db = event.target.result;

@@ -29078,7 +29078,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(46)
+var listToStyles = __webpack_require__(47)
 
 /*
 type StyleObject = {
@@ -29284,7 +29284,7 @@ function applyToTag (styleElement, obj) {
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(15);
-module.exports = __webpack_require__(57);
+module.exports = __webpack_require__(58);
 
 
 /***/ }),
@@ -29294,7 +29294,7 @@ module.exports = __webpack_require__(57);
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_store_store__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_SearchForm__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_SearchForm__ = __webpack_require__(44);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_SearchForm___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__components_SearchForm__);
 /**
  * First we will load all of this project's JavaScript dependencies which
@@ -29316,7 +29316,7 @@ window.Vue = __webpack_require__(11);
 
 
 
-Vue.component('example-component', __webpack_require__(54));
+Vue.component('example-component', __webpack_require__(55));
 
 var app = new Vue({
     el: '#app',
@@ -43223,7 +43223,7 @@ exports.clearImmediate = clearImmediate;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vuex__ = __webpack_require__(42);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__idb__ = __webpack_require__(67);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__idb__ = __webpack_require__(43);
 
 
 
@@ -43282,7 +43282,7 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
                                 if (countEvent.target.result > 1) {
                                     console.log('Getting languages from IDB');
                                     var idbLanguages = [];
-                                    countEvent.target.source.openCursor().onsuccess = function (openCursorEvent) {
+                                    languagesObjectStore.index('ref_name').openCursor().onsuccess = function (openCursorEvent) {
                                         var cursor = openCursorEvent.target.result;
                                         if (cursor) {
                                             idbLanguages.push(cursor.value);
@@ -43319,6 +43319,7 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
                 // If IDB is available, save the languages to it.
                 if (__WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */]) {
                     var openDBRequest = __WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */].open();
+
                     openDBRequest.onsuccess = function (event) {
                         console.log('Storing languages in IDB');
                         var db = event.target.result;
@@ -44312,18 +44313,65 @@ var index_esm = {
 
 /***/ }),
 /* 43 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return idb; });
+// let idb be null for start.
+var idb = null;
+
+// If indexedDB is available, we will make new idb instance.
+if (window.indexedDB) {
+    idb = {
+        /**
+         * Open IDB database.
+         *
+         * @returns {IDBOpenDBRequest}
+         */
+        open: function open() {
+            var db = window.indexedDB.open("strucko", 1);
+
+            // The structure of the database. Update as needed.
+            db.onupgradeneeded = function (event) {
+                // Save the IDBDatabase interface
+                var db = event.target.result;
+                console.log('IDB needs update to version ' + db.version);
+                switch (db.version) {
+                    case 1:
+                        // Languages store will keep all languages available in the app.
+                        var languagesStore = db.createObjectStore("languages", { keyPath: "id" });
+                        languagesStore.createIndex('id', 'id', { unique: true });
+                        languagesStore.createIndex('ref_name', 'ref_name', { unique: true });
+                        // Timestamps will store time when the particular object store has been updated.
+                        var timestampsStore = db.createObjectStore("timestamps", { keyPath: "id" });
+                }
+            };
+
+            db.onerror = function (event) {
+                console.log('Oups, could not use IndexDB');
+            };
+
+            return db;
+        }
+    };
+}
+
+
+
+/***/ }),
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(44)
+  __webpack_require__(45)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
-var __vue_script__ = __webpack_require__(47)
+var __vue_script__ = __webpack_require__(48)
 /* template */
-var __vue_template__ = __webpack_require__(53)
+var __vue_template__ = __webpack_require__(54)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -44362,13 +44410,13 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(45);
+var content = __webpack_require__(46);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -44388,7 +44436,7 @@ if(false) {
 }
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(12)(false);
@@ -44402,7 +44450,7 @@ exports.push([module.i, "\n.loader[data-v-48df5743] {\n    margin: 0 auto;\n    
 
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports) {
 
 /**
@@ -44435,13 +44483,17 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__form_elements_LanguagesSelectInput__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__form_elements_LanguagesSelectInput__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__form_elements_LanguagesSelectInput___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__form_elements_LanguagesSelectInput__);
+//
+//
+//
+//
 //
 //
 //
@@ -44492,19 +44544,19 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(49)
+  __webpack_require__(50)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
-var __vue_script__ = __webpack_require__(51)
+var __vue_script__ = __webpack_require__(52)
 /* template */
-var __vue_template__ = __webpack_require__(52)
+var __vue_template__ = __webpack_require__(53)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -44543,13 +44595,13 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(50);
+var content = __webpack_require__(51);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -44569,7 +44621,7 @@ if(false) {
 }
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(12)(false);
@@ -44577,20 +44629,19 @@ exports = module.exports = __webpack_require__(12)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_lodash__);
-//
 //
 //
 //
@@ -44645,56 +44696,63 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "form-group" }, [
-    _c(
-      "select",
-      {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.selectedLanguage,
-            expression: "selectedLanguage"
+  return _c(
+    "div",
+    { staticClass: "form-group" },
+    [
+      _vm._t("label"),
+      _vm._v(" "),
+      _c(
+        "select",
+        {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.selectedLanguage,
+              expression: "selectedLanguage"
+            }
+          ],
+          staticClass: "form-control",
+          on: {
+            change: function($event) {
+              var $$selectedVal = Array.prototype.filter
+                .call($event.target.options, function(o) {
+                  return o.selected
+                })
+                .map(function(o) {
+                  var val = "_value" in o ? o._value : o.value
+                  return val
+                })
+              _vm.selectedLanguage = $event.target.multiple
+                ? $$selectedVal
+                : $$selectedVal[0]
+            }
           }
+        },
+        [
+          _c("option", { attrs: { value: "", disabled: "" } }, [
+            _vm._v("Select language")
+          ]),
+          _vm._v(" "),
+          _vm._l(_vm.languages, function(language) {
+            return _c("option", { domProps: { value: language.id } }, [
+              _vm._v(_vm._s(language.ref_name))
+            ])
+          })
         ],
-        staticClass: "form-control",
-        on: {
-          change: function($event) {
-            var $$selectedVal = Array.prototype.filter
-              .call($event.target.options, function(o) {
-                return o.selected
-              })
-              .map(function(o) {
-                var val = "_value" in o ? o._value : o.value
-                return val
-              })
-            _vm.selectedLanguage = $event.target.multiple
-              ? $$selectedVal
-              : $$selectedVal[0]
-          }
-        }
-      },
-      [
-        _c("option", { attrs: { value: "", disabled: "" } }, [
-          _vm._v("Select language")
-        ]),
-        _vm._v(" "),
-        _vm._l(_vm.languages, function(language) {
-          return _c("option", { domProps: { value: language.id } }, [
-            _vm._v(_vm._s(language.ref_name))
-          ])
-        })
-      ],
-      2
-    )
-  ])
+        2
+      )
+    ],
+    2
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -44707,7 +44765,7 @@ if (false) {
 }
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -44719,9 +44777,25 @@ var render = function() {
       ? _c(
           "form",
           [
-            _c("languages-select-input", { attrs: { defaultLanguage: "eng" } }),
+            _c(
+              "languages-select-input",
+              { attrs: { defaultLanguage: "eng" } },
+              [
+                _c("label", { attrs: { slot: "label" }, slot: "label" }, [
+                  _vm._v("Search in")
+                ])
+              ]
+            ),
             _vm._v(" "),
-            _c("languages-select-input", { attrs: { defaultLanguage: "hrv" } }),
+            _c(
+              "languages-select-input",
+              { attrs: { defaultLanguage: "hrv" } },
+              [
+                _c("label", { attrs: { slot: "label" }, slot: "label" }, [
+                  _vm._v("Translate to")
+                ])
+              ]
+            ),
             _vm._v(" "),
             _c("div", { staticClass: "form-group" }, [
               _c("input", {
@@ -44790,15 +44864,15 @@ if (false) {
 }
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
 var normalizeComponent = __webpack_require__(3)
 /* script */
-var __vue_script__ = __webpack_require__(55)
+var __vue_script__ = __webpack_require__(56)
 /* template */
-var __vue_template__ = __webpack_require__(56)
+var __vue_template__ = __webpack_require__(57)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -44837,7 +44911,7 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -44875,7 +44949,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -44919,65 +44993,10 @@ if (false) {
 }
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 58 */,
-/* 59 */,
-/* 60 */,
-/* 61 */,
-/* 62 */,
-/* 63 */,
-/* 64 */,
-/* 65 */,
-/* 66 */,
-/* 67 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return idb; });
-// let idb be null for start.
-var idb = null;
-
-// If indexedDB is available, we will make new idb instance.
-if (window.indexedDB) {
-    idb = {
-        /**
-         * Open IDB database.
-         *
-         * @returns {IDBOpenDBRequest}
-         */
-        open: function open() {
-            var db = window.indexedDB.open("strucko", 1);
-
-            // The structure of the database. Update as needed.
-            db.onupgradeneeded = function (event) {
-                // Save the IDBDatabase interface
-                var db = event.target.result;
-                console.log('IDB needs update to version ' + db.version);
-                switch (db.version) {
-                    case 1:
-                        // Languages store will keep all languages available in the app.
-                        var objectStore = db.createObjectStore("languages", { keyPath: "id" });
-                        objectStore.createIndex('id', 'id', { unique: true });
-                        // Timestamps will store time when the particular object store has been updated.
-                        db.createObjectStore("timestamps", { keyPath: "id" });
-                }
-            };
-
-            db.onerror = function (event) {
-                Console.log('Oups, could not use IndexDB');
-            };
-
-            return db;
-        }
-    };
-}
-
-
 
 /***/ })
 /******/ ]);

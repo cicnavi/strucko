@@ -1,9 +1,13 @@
 <template>
     <div :id="name">
         <form v-if="languagesLoaded">
-            <languages-select-input defaultLanguage="eng"></languages-select-input>
+            <languages-select-input defaultLanguage="eng">
+                <label slot="label">Search in</label>
+            </languages-select-input>
 
-            <languages-select-input defaultLanguage="hrv"></languages-select-input>
+            <languages-select-input defaultLanguage="hrv">
+                <label slot="label">Translate to</label>
+            </languages-select-input>
 
             <div class="form-group">
                 <input type="text"
@@ -12,7 +16,7 @@
                        class="form-control input-lg"
                        placeholder="Enter term"
                        aria-describedby="termHelp"
-                v-model="term">
+                        v-model="term">
                 <small id="termHelp" class="form-text text-muted">Enter the term to search for.</small>
             </div>
 
