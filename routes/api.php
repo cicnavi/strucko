@@ -23,4 +23,5 @@ Route::group([
 	'namespace' => 'Api\V1'
 ], function (){
 	Route::get('languages', 'LanguageController@index');
+	Route::get('search', 'SearchController@search');
 });

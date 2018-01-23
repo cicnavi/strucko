@@ -21,8 +21,8 @@ if (window.indexedDB) {
                     case 1:
                         // Languages store will keep all languages available in the app.
                         let languagesStore = db.createObjectStore("languages", { keyPath: "id" });
-                        languagesStore.createIndex('id', 'id', {unique: true});
-                        languagesStore.createIndex('ref_name', 'ref_name', {unique: true});
+                        languagesStore.createIndex('id', 'id', {unique: true}); // Order by ID
+                        languagesStore.createIndex('ref_name', 'ref_name', {unique: true}); // Order by language name
                         // Timestamps will store time when the particular object store has been updated.
                         let timestampsStore = db.createObjectStore("timestamps", {keyPath: "id"});
                 }

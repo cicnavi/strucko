@@ -2,8 +2,16 @@
 
 @section('content')
 
-    <h1 class="text-center">Strucko <small>IT Dictionary</small></h1>
+    <div class="row">
+        <div class="col-xs-12">
+            <h1 class="text-center hidden-xs">Strucko <small>IT Dictionary</small></h1>
+        </div>
+    </div>
 
-    <search-form></search-form>
+    <div class="row">
+        <div class="col-xs-12">
+            <search-form></search-form>
+        </div>
+    </div>
 
 @endsection

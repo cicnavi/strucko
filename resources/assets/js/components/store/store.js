@@ -52,7 +52,7 @@ export const store = new Vuex.Store({
                             let languagesObjectStore = db.transaction('languages', 'readonly').objectStore('languages');
                             let countRequest = languagesObjectStore.count();
                             countRequest.onsuccess = function(countEvent) {
-                                // If there is at least two languages, use them.
+                                // If there are at least two languages, use them.
                                 if (countEvent.target.result > 1) {
                                     console.log('Getting languages from IDB');
                                     let idbLanguages = [];
