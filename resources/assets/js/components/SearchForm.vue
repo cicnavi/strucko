@@ -1,55 +1,56 @@
 <template>
     <div class="row">
         <div class="col-xs-12">
-            <div class="row">
+            <div class="row" v-if="languagesLoaded">
                 <div class="col-xs-12">
-                    <div v-if="languagesLoaded">
-                        <form >
-                            <div class="form-row">
-                                <div class="col-xs-12 col-sm-6">
-                                    <div class="form-group">
-                                        <label>Search in</label>
-                                        <select class="form-control" v-model="params.language_id">
-                                            <option value="" disabled>Select language</option>
-                                            <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
-                                        </select>
-                                    </div>
-                                </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-6">
 
-                                <div class="col-xs-12 col-sm-6">
-                                    <div class="form-group">
-                                        <label>Translate to</label>
-                                        <select class="form-control" v-model="params.translate_to">
-                                            <option value="" disabled>Select language</option>
-                                            <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
-                                        </select>
-                                    </div>
-                                </div>
+                            <div class="form-group">
+                                <label>Search in</label>
+                                <select class="form-control" v-model="params.language_id">
+                                    <option value="" disabled>Select language</option>
+                                    <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
+                                </select>
                             </div>
+                        </div>
 
-                            <div class="form-row">
-                                <div class="form-group col-sm-10 col-xs-12">
-                                    <input type="text"
-                                           class="form-control input-lg"
-                                           placeholder="Enter term"
-                                           aria-describedby="termHelp"
-                                           v-model="params.term">
-                                    <small id="termHelp"
-                                           class="form-text text-muted"
-                                           :class="{'text-danger': status.termNotEntered}">Enter the term to search for.</small>
-                                </div>
-                                <div class="form-group col-sm-2 col-xs-12">
-                                    <button type="submit" class="btn btn-primary btn-lg btn-block" @click.prevent="search">Go</button>
-                                </div>
+                        <div class="col-xs-12 col-sm-6">
+                            <div class="form-group">
+                                <label>Translate to</label>
+                                <select class="form-control" v-model="params.translate_to">
+                                    <option value="" disabled>Select language</option>
+                                    <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
+                                </select>
                             </div>
-                        </form>
+                        </div>
                     </div>
-                    <div v-else>
-                        <p class="text-center">Please wait while we prepare data...</p>
-                        <div class="loader"></div>
+
+                    <div class="row">
+                        <div class="form-group col-sm-10 col-xs-12">
+                            <input type="text"
+                                   class="form-control input-lg"
+                                   placeholder="Enter term"
+                                   aria-describedby="termHelp"
+                                   v-model="params.term">
+                            <small id="termHelp"
+                                   class="form-text text-muted"
+                                   :class="{'text-danger': status.termNotEntered}">Enter the term to search for.</small>
+                        </div>
+                        <div class="form-group col-sm-2 col-xs-12">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block" @click.prevent="search">Go</button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <div class="row" v-else>
+                <div class="col-xs-12">
+                    <p class="text-center">Please wait while we prepare data...</p>
+                    <div class="loader"></div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-xs-12" v-if="status.searchInProgress">
                     <p class="text-center">Searching...</p>
