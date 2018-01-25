@@ -9,7 +9,7 @@
                                 <div class="col-xs-12 col-sm-6">
                                     <div class="form-group">
                                         <label>Search in</label>
-                                        <select class="form-control" v-model="searchInLanguage">
+                                        <select class="form-control" v-model="params.language_id">
                                             <option value="" disabled>Select language</option>
                                             <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
                                         </select>
@@ -19,7 +19,7 @@
                                 <div class="col-xs-12 col-sm-6">
                                     <div class="form-group">
                                         <label>Translate to</label>
-                                        <select class="form-control" v-model="translateToLanguage">
+                                        <select class="form-control" v-model="params.translate_to">
                                             <option value="" disabled>Select language</option>
                                             <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
                                         </select>
@@ -30,13 +30,13 @@
                             <div class="form-row">
                                 <div class="form-group col-sm-10 col-xs-12">
                                     <input type="text"
-                                           id="term"
-                                           name="term"
                                            class="form-control input-lg"
                                            placeholder="Enter term"
                                            aria-describedby="termHelp"
-                                           v-model="term">
-                                    <small id="termHelp" class="form-text text-muted" :class="{'text-danger': termNotEntered}">Enter the term to search for.</small>
+                                           v-model="params.term">
+                                    <small id="termHelp"
+                                           class="form-text text-muted"
+                                           :class="{'text-danger': status.termNotEntered}">Enter the term to search for.</small>
                                 </div>
                                 <div class="form-group col-sm-2 col-xs-12">
                                     <button type="submit" class="btn btn-primary btn-lg btn-block" @click.prevent="search">Go</button>
@@ -51,9 +51,12 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-xs-12">
-                    <search-results :results-returned="resultsReturned"
-                                    :api-error="apiError"
+                <div class="col-xs-12" v-if="status.searchInProgress">
+                    <p class="text-center">Searching...</p>
+                    <div class="loader"></div>
+                </div>
+                <div class="col-xs-12" v-else>
+                    <search-results :status="status"
                                     :results="results"></search-results>
                 </div>
             </div>
@@ -69,43 +72,54 @@
         data: function () {
             return {
                 name: 'search-form',
-                term: '',
-                searchInLanguage: 'eng',
-                translateToLanguage: 'hrv',
-                resultsReturned: false,
-                apiError: false,
+                params: {
+                    term: 'server',
+                    language_id: 'eng',
+                    translate_to: 'hrv',
+                    scientific_field_id: 19,
+                },
+                status: {
+                    searchInProgress: false,
+                    resultsReturned: false,
+                    apiError: false,
+                    termNotEntered: false
+                },
                 results: {
                     exactMatch: null,
                     similarTerms: []
-                },
-                scientificField: 19,
-                termNotEntered: false
+                }
             }
         },
         methods: {
             search() {
-                if (! this.term) {
-                    this.termNotEntered = true;
+
+                if ( ! this.params.term) {
+                    this.status.termNotEntered = true;
                     return;
                 } else {
-                    this.termNotEntered = false;
+                    this.status.termNotEntered = false;
+                    this.status.resultsReturned = false;
+                    this.status.searchInProgress = true;
                 }
 
                 let app = this;
 
                 axios.get('api/v1/search', {
                     params: {
-                        term: this.term
+                        ...app.params
                     }
+
                 })
                 .then(function (response) {
-                    app.apiError = false;
-                    app.resultsReturned = true;
-                    console.log('Response: ', response);
+                    app.status.apiError = false;
+                    app.status.searchInProgress = false;
+                    app.status.resultsReturned = true;
+                    app.results = response.data;
                 })
                 .catch(function (error) {
-                    app.apiError = true;
-                    app.resultsReturned = false;
+                    app.status.apiError = true;
+                    app.status.searchInProgress = false;
+                    app.status.resultsReturned = false;
                     console.log('Error: ', error);
                 });
             }

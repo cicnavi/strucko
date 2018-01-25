@@ -47,6 +47,19 @@ class Term extends Model
     {
         $query->where('status_id', '>', 250);
     }
+
+    public function scopeWithTranslations($query, $translateTo)
+    {
+    	$query->with(['translations'=> function($query) use ($translateTo){
+    		$query->greaterThanRejected()
+			    ->whereHas('translation', function ($query) use ($translateTo) {
+			    	$query->where('language_id', $translateTo);
+			    })
+			    ->with('translation', 'translation.language', 'translation.status')
+			    ->orderBy('status_id', 'desc')
+			    ->orderBy('votes_sum', 'desc');
+	    }]);
+    }
     
     /**
      * 

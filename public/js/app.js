@@ -44603,6 +44603,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__form_elements_LanguagesSelectInput___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__form_elements_LanguagesSelectInput__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__SearchResults__ = __webpack_require__(68);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__SearchResults___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__SearchResults__);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+//
+//
+//
 //
 //
 //
@@ -44674,41 +44679,50 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     data: function data() {
         return {
             name: 'search-form',
-            term: '',
-            searchInLanguage: 'eng',
-            translateToLanguage: 'hrv',
-            resultsReturned: false,
-            apiError: false,
+            params: {
+                term: 'server',
+                language_id: 'eng',
+                translate_to: 'hrv',
+                scientific_field_id: 19
+            },
+            status: {
+                searchInProgress: false,
+                resultsReturned: false,
+                apiError: false,
+                termNotEntered: false
+            },
             results: {
                 exactMatch: null,
                 similarTerms: []
-            },
-            scientificField: 19,
-            termNotEntered: false
+            }
         };
     },
     methods: {
         search: function search() {
-            if (!this.term) {
-                this.termNotEntered = true;
+
+            if (!this.params.term) {
+                this.status.termNotEntered = true;
                 return;
             } else {
-                this.termNotEntered = false;
+                this.status.termNotEntered = false;
+                this.status.resultsReturned = false;
+                this.status.searchInProgress = true;
             }
 
             var app = this;
 
             axios.get('api/v1/search', {
-                params: {
-                    term: this.term
-                }
+                params: _extends({}, app.params)
+
             }).then(function (response) {
-                app.apiError = false;
-                app.resultsReturned = true;
-                console.log('Response: ', response);
+                app.status.apiError = false;
+                app.status.searchInProgress = false;
+                app.status.resultsReturned = true;
+                app.results = response.data;
             }).catch(function (error) {
-                app.apiError = true;
-                app.resultsReturned = false;
+                app.status.apiError = true;
+                app.status.searchInProgress = false;
+                app.status.resultsReturned = false;
                 console.log('Error: ', error);
             });
         }
@@ -44974,8 +44988,8 @@ var render = function() {
                               {
                                 name: "model",
                                 rawName: "v-model",
-                                value: _vm.searchInLanguage,
-                                expression: "searchInLanguage"
+                                value: _vm.params.language_id,
+                                expression: "params.language_id"
                               }
                             ],
                             staticClass: "form-control",
@@ -44989,9 +45003,13 @@ var render = function() {
                                     var val = "_value" in o ? o._value : o.value
                                     return val
                                   })
-                                _vm.searchInLanguage = $event.target.multiple
-                                  ? $$selectedVal
-                                  : $$selectedVal[0]
+                                _vm.$set(
+                                  _vm.params,
+                                  "language_id",
+                                  $event.target.multiple
+                                    ? $$selectedVal
+                                    : $$selectedVal[0]
+                                )
                               }
                             }
                           },
@@ -45026,8 +45044,8 @@ var render = function() {
                               {
                                 name: "model",
                                 rawName: "v-model",
-                                value: _vm.translateToLanguage,
-                                expression: "translateToLanguage"
+                                value: _vm.params.translate_to,
+                                expression: "params.translate_to"
                               }
                             ],
                             staticClass: "form-control",
@@ -45041,9 +45059,13 @@ var render = function() {
                                     var val = "_value" in o ? o._value : o.value
                                     return val
                                   })
-                                _vm.translateToLanguage = $event.target.multiple
-                                  ? $$selectedVal
-                                  : $$selectedVal[0]
+                                _vm.$set(
+                                  _vm.params,
+                                  "translate_to",
+                                  $event.target.multiple
+                                    ? $$selectedVal
+                                    : $$selectedVal[0]
+                                )
                               }
                             }
                           },
@@ -45078,25 +45100,23 @@ var render = function() {
                             {
                               name: "model",
                               rawName: "v-model",
-                              value: _vm.term,
-                              expression: "term"
+                              value: _vm.params.term,
+                              expression: "params.term"
                             }
                           ],
                           staticClass: "form-control input-lg",
                           attrs: {
                             type: "text",
-                            id: "term",
-                            name: "term",
                             placeholder: "Enter term",
                             "aria-describedby": "termHelp"
                           },
-                          domProps: { value: _vm.term },
+                          domProps: { value: _vm.params.term },
                           on: {
                             input: function($event) {
                               if ($event.target.composing) {
                                 return
                               }
-                              _vm.term = $event.target.value
+                              _vm.$set(_vm.params, "term", $event.target.value)
                             }
                           }
                         }),
@@ -45105,7 +45125,7 @@ var render = function() {
                           "small",
                           {
                             staticClass: "form-text text-muted",
-                            class: { "text-danger": _vm.termNotEntered },
+                            class: { "text-danger": _vm.status.termNotEntered },
                             attrs: { id: "termHelp" }
                           },
                           [_vm._v("Enter the term to search for.")]
@@ -45147,20 +45167,22 @@ var render = function() {
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "row" }, [
-        _c(
-          "div",
-          { staticClass: "col-xs-12" },
-          [
-            _c("search-results", {
-              attrs: {
-                "results-returned": _vm.resultsReturned,
-                "api-error": _vm.apiError,
-                results: _vm.results
-              }
-            })
-          ],
-          1
-        )
+        _vm.status.searchInProgress
+          ? _c("div", { staticClass: "col-xs-12" }, [
+              _c("p", { staticClass: "text-center" }, [_vm._v("Searching...")]),
+              _vm._v(" "),
+              _c("div", { staticClass: "loader" })
+            ])
+          : _c(
+              "div",
+              { staticClass: "col-xs-12" },
+              [
+                _c("search-results", {
+                  attrs: { status: _vm.status, results: _vm.results }
+                })
+              ],
+              1
+            )
       ])
     ])
   ])
@@ -45405,7 +45427,7 @@ exports = module.exports = __webpack_require__(12)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -45435,10 +45457,49 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     name: "search-results",
-    props: ['resultsReturned', 'apiError', 'results']
+    props: ['status', 'results']
 
 });
 
@@ -45452,15 +45513,127 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "row" }, [
     _c("div", { staticClass: "col-xs-12" }, [
-      _vm.resultsReturned
+      _vm.status.resultsReturned
         ? _c("div", { staticClass: "row" }, [
-            _c("div", { staticClass: "col-xs-12" }, [
-              _vm._v("\n                Results\n            ")
-            ])
+            _vm.results.exactMatch
+              ? _c("div", { staticClass: "row" }, [
+                  _c(
+                    "div",
+                    { staticClass: "col-xs-12" },
+                    [
+                      _c("h2", [
+                        _vm._v(
+                          "\n                        " +
+                            _vm._s(_vm.results.exactMatch.term) +
+                            "\n                        "
+                        ),
+                        _c(
+                          "small",
+                          _vm._l(_vm.results.exactMatch.translations, function(
+                            translation,
+                            index
+                          ) {
+                            return _c("span", [
+                              _vm._v(
+                                "\n                            " +
+                                  _vm._s(translation.translation.term)
+                              ),
+                              index !=
+                              _vm.results.exactMatch.translations.length - 1
+                                ? _c("span", [_vm._v(",")])
+                                : _vm._e()
+                            ])
+                          })
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _vm._l(_vm.results.exactMatch.definitions, function(
+                        definition
+                      ) {
+                        return _c("p", [
+                          _vm._v(
+                            "\n                        " +
+                              _vm._s(definition.definition) +
+                              "\n                        "
+                          ),
+                          _c(
+                            "small",
+                            { staticStyle: { "font-style": "italic" } },
+                            [
+                              _c(
+                                "a",
+                                {
+                                  attrs: {
+                                    href: definition.link,
+                                    title: definition.source
+                                  }
+                                },
+                                [
+                                  _vm._v(
+                                    "\n                                source\n                            "
+                                  )
+                                ]
+                              )
+                            ]
+                          )
+                        ])
+                      })
+                    ],
+                    2
+                  )
+                ])
+              : _c("div", [
+                  _c("p", { staticClass: "text-info text-center" }, [
+                    _vm._v(
+                      "\n                    No exact match for your query...\n                "
+                    )
+                  ])
+                ]),
+            _vm._v(" "),
+            _vm.results.similarTerms.length > 0
+              ? _c("div", { staticClass: "row" }, [
+                  _c(
+                    "div",
+                    { staticClass: "col-xs-12" },
+                    [
+                      _c("hr"),
+                      _vm._v(" "),
+                      _c("h3", [_vm._v("Similar terms")]),
+                      _vm._v(" "),
+                      _vm._l(_vm.results.similarTerms, function(term, index) {
+                        return _c("h4", [
+                          _vm._v(
+                            "\n                        " +
+                              _vm._s(term.term) +
+                              "\n                        "
+                          ),
+                          _c(
+                            "small",
+                            _vm._l(term.translations, function(translation) {
+                              return _c("span", [
+                                _vm._v(
+                                  "\n                                " +
+                                    _vm._s(translation.translation.term)
+                                ),
+                                index != term.translations.length - 1
+                                  ? _c("span", [_vm._v(",")])
+                                  : _vm._e()
+                              ])
+                            })
+                          )
+                        ])
+                      })
+                    ],
+                    2
+                  )
+                ])
+              : _vm._e()
           ])
         : _vm._e(),
       _vm._v(" "),
-      _vm.apiError ? _c("div", { staticClass: "row" }, [_vm._m(0)]) : _vm._e()
+      _vm.status.apiError
+        ? _c("div", { staticClass: "row" }, [_vm._m(0)])
+        : _vm._e()
     ])
   ])
 }
