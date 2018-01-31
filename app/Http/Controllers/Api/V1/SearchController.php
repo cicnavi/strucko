@@ -30,6 +30,7 @@ class SearchController extends Controller
 	    $similarTerms = Term::greaterThanRejected()
             ->where('term', 'like', '%' . $request->get('term') . '%')
 		    ->where('language_id', $request->get('language_id'))
+		    ->inRandomOrder()
 		    ->orderBy('votes_sum', 'desc')
 		    ->withTranslations($request->get('translate_to'))
 		    ->with('definitions')

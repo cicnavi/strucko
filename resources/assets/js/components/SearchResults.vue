@@ -37,7 +37,7 @@
                             <h4 v-for="(term, index) in results.similarTerms">
                                 {{ term.term }}
                                 <small>
-                                <span v-for="translation in term.translations">
+                                <span v-for="(translation, index) in term.translations">
                                     {{ translation.translation.term }}<span v-if="index != (term.translations.length - 1)">,</span>
                                 </span>
                                 </small>

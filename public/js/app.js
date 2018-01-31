@@ -45232,7 +45232,10 @@ var render = function() {
                             ),
                             _c(
                               "small",
-                              _vm._l(term.translations, function(translation) {
+                              _vm._l(term.translations, function(
+                                translation,
+                                index
+                              ) {
                                 return _c("span", [
                                   _vm._v(
                                     "\n                                " +
