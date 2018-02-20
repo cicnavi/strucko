@@ -10,7 +10,7 @@
 
     <div class="row">
         <div class="col-xs-12">
-            <search-form></search-form>
+            <router-view></router-view>
         </div>
     </div>
 

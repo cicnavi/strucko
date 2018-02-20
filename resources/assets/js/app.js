@@ -15,15 +15,15 @@ window.Vue = require('vue');
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-import { store } from "./components/store/store";
+import { store } from "./store/store";
+import { router } from "./router/router";
 
 import SearchForm from './components/SearchForm';
-
-Vue.component('example-component', require('./components/ExampleComponent.vue'));
 
 const app = new Vue({
     el: '#app',
     store,
+    router,
     data: {
         appName: 'Strucko app'
     },

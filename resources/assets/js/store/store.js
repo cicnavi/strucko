@@ -6,14 +6,43 @@ Vue.use(Vuex);
 import { idb } from './idb';
 
 export const store = new Vuex.Store({
+    strict: true,
     state: {
         languages: [],
-        languagesLoaded: false
+        languagesLoaded: false,
+        searchParams: {
+            language_id: 'eng',
+            translate_to: 'hrv',
+            term: '',
+            scientific_field_id: 19
+        }
+    },
+    getters: {
+        searchIsGoodToGo: state => {
+            return (state.searchParams.language_id &&
+                state.searchParams.translate_to &&
+                state.searchParams.term &&
+                state.searchParams.scientific_field_id);
+        }
     },
     mutations: {
         setLanguages(state, payload) {
             state.languages = payload.languages;
             state.languagesLoaded = true;
+        },
+        setSearchParams(state, payload) {
+            state.searchParams.language_id = payload.language_id;
+            state.searchParams.translate_to = payload.translate_to;
+            state.searchParams.term = payload.term;
+        },
+        setSearchParamLanguageId(state, value) {
+            state.searchParams.language_id = value;
+        },
+        setSearchParamTranslateTo(state, value) {
+            state.searchParams.translate_to = value;
+        },
+        setSearchParamTerm(state, value) {
+            state.searchParams.term = value;
         }
     },
     actions: {
