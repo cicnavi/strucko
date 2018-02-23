@@ -5,8 +5,21 @@ Vue.use(VueRouter);
 
 import SearchForm from '../components/SearchForm';
 import SearchResults from '../components/SearchResults';
+import About from '../components/pages/About';
+import TermsOfUse from '../components/pages/TermsOfUse';
+import Privacy from '../components/pages/Privacy';
+import Cookies from '../components/pages/Cookies';
+import Disclaimer from '../components/pages/Disclaimer';
 
 export const router = new VueRouter({
+    linkActiveClass: 'active',
+    scrollBehavior (to, from, savedPosition) {
+        if (savedPosition) {
+            return savedPosition
+        } else {
+            return { x: 0, y: 0 }
+        }
+    },
     routes: [
         {
             path: '/',
@@ -26,6 +39,12 @@ export const router = new VueRouter({
                     }
                 }
             ]
-        }
-    ]
+        },
+        {path: '/about', name: 'about', component: About},
+        {path: '/tou', name: 'tou', component: TermsOfUse},
+        {path: '/privacy', name: 'privacy', component: Privacy},
+        {path: '/cookies', name: 'cookies', component: Cookies},
+        {path: '/disclaimer', name: 'disclaimer', component: Disclaimer},
+    ],
+
 });

@@ -3,42 +3,42 @@
         <div class="col-xs-12">
             <div class="row" v-if="! status.error && ! searchInProgress">
                 <div class="col-xs-12">
-                    <div class="row" v-if="results.exactMatch">
+                    <div class="row" >
                         <div class="col-xs-12">
-                            <h2>
-                                {{ results.exactMatch.term }}
-                                <small>
-                            <span v-for="(translation, index) in results.exactMatch.translations">
-                                {{ translation.translation.term }}<span v-if="index != ( results.exactMatch.translations.length - 1)">,</span>
-                            </span>
-                                </small>
-                            </h2>
-                            <p v-for="definition in results.exactMatch.definitions">
-                                {{ definition.definition }}
-                                <small style="font-style: italic;">
-                                    <a :href="definition.link" :title="definition.source" target="_blank">
-                                        source
-                                    </a>
-                                </small>
-                            </p>
+                            <div v-if="results.exactMatch">
+                                <h2>
+                                    {{ results.exactMatch.term }}
+                                    <small>
+                                        <em v-for="(translation, index) in results.exactMatch.translations">
+                                            {{ translation.translation.term }}<span v-if="index != ( results.exactMatch.translations.length - 1)">,</span>
+                                        </em>
+                                    </small>
+                                </h2>
+                                <p v-for="definition in results.exactMatch.definitions">
+                                    {{ definition.definition }}
+                                    <small style="font-style: italic;">
+                                        <a :href="definition.link" :title="definition.source" target="_blank">
+                                            source
+                                        </a>
+                                    </small>
+                                </p>
+                            </div>
+                            <div v-else class="text-info text-center">
+                                    <h4>No results...</h4>
+                            </div>
                         </div>
-                    </div>
-                    <div v-else>
-                        <p class="text-info text-center">
-                            No exact match for your query...
-                        </p>
                     </div>
 
                     <div class="row" v-if="results.similarTerms.length > 0">
 
                         <div class="col-xs-12">
                             <hr>
-                            <h4>Related terms</h4>
+                            <h4>Similar terms</h4>
                             <p v-for="(term, index) in results.similarTerms">
-                                <b> {{ term.term }} </b>
-                                <span v-for="(translation, index) in term.translations">
+                                {{ term.term }}
+                                <em v-for="(translation, index) in term.translations">
                                     {{ translation.translation.term }}<span v-if="index != (term.translations.length - 1)">,</span>
-                                </span>
+                                </em>
                             </p>
                         </div>
                     </div>
