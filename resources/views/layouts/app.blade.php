@@ -16,8 +16,11 @@
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
+    @include('layouts.cookie-consent')
+
     @if(env('APP_ENV') == 'production')
         @include('layouts.adsense')
+        @include('layouts.analytics')
     @endif
 </head>
 <body>
