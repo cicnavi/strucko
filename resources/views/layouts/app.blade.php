@@ -13,6 +13,10 @@
 
     <title>{{ config('app.name', 'Strucko - IT Dictionary') }}</title>
 
+    <link rel="icon"
+          type="image/png"
+          href="https://strucko.com/img/favicon.png">
+
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
