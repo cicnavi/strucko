@@ -13,10 +13,7 @@
             knowledge poses any threat to you. We use Google AdSense platform to serve
             ads on our site, and this will make your web browser automatically send certain
             information to Google (for example, the web address of the page that you are
-            visiting and your IP address). If you sign up with us, we take great care
-            to keep your information safe and we will never share it with others without
-            your permission. We never share your data with 3rd parties except to help us
-            deliver our own services. These are just the key points. If you need more detail,
+            visiting and your IP address). These are just the key points. If you need more detail,
             keep reading.
         </p>
         <h3>Measuring our visitors</h3>
@@ -34,50 +31,11 @@
         <h3>Serving Ads</h3>
         <p>
             We use the <a href="https://www.google.com/adsense/">Google AdSense</a> platform to
-            serve ads on our site. Third party vendors, including Google, use cookies to
-            serve ads based on a user's prior visits to our website.
-            <br>
-            Google's use of the DoubleClick cookie enables it and its partners to serve ads
-            to users based on their visit to our site and/or other sites on the Internet.
-            The DoubleClick cookie is used by Google in the ads served on the websites of
-            its partners, such as websites displaying AdSense ads or participating in Google
-            certified ad networks. When users visit a partner's website and either view
-            or click on an ad, a cookie may be dropped on that end user's browser.
-            Users may opt out of the use of the DoubleClick cookie for interest-based advertising
-            by visiting <a href="http://www.google.com/ads/preferences/">Ads Settings</a>.
-            Deleting cookies does not mean you are permanently opted out of any advertising program.
-            Unless you have settings that disallow cookies, the next time you visit a site
-            running the advertisements, a new cookie will be added.
-        </p>
-        <p>
+            serve ads on our site.
             For more information on how Google collects and uses your data, see this page:
             <a href="http://www.google.com/intl/en/policies/privacy/partners/">http://www.google.com/intl/en/policies/privacy/partners/</a>
         </p>
-        <h3>Facebook, Twitter, Google+ and other social networks, enabled by AddThis</h3>
-        <p>
-            These services provide social buttons and similar features which we use on our
-            website – such as the "Like" and "Tweet" buttons. To do so we embed code that
-            they provide and we do not control ourselves. To function, their buttons generally
-            know if you are logged in; for example Facebook use this to say "x of your friends like this".
-            We do not have any access to that information, nor can we control how those networks use it.
-            Social networks therefore could know that you are viewing this website, if you use their
-            services (that is not to say they do, but their policies may change). As our website is
-            remarkably inoffensive we imagine this is not a concern for most users.
-            To enable social buttons and similar features, we use the
-            <a href="http://www.addthis.com/privacy">AddThis</a> platform.</p>
-        <h3>Discussion comments</h3>
-        <p>
-            To allow visitors to discuss our web pages we use a discussion system called
-            <a href="https://disqus.com/">Disqus</a>. To do so we embed code that Disqus
-            provide and we do not control ourselves. Disqus anonymously tracks visitors to
-            pages like we do. They also remember who you are if you login to any Disqus service,
-            so you can comment on any website using their tool. Logging in to Disqus can be
-            done in many ways, including via Facebook. If you login via social network,
-            Disqus will be able to link your activity to that network. In this way, your
-            Disqus activity may be personally identifiable. Disqus will know what pages you
-            viewed in our site and what you wrote on those comments. Of course all comments
-            you leave are also publicly visible on the Internet alongside your name.
-        </p>
+
         <h3>Our cookies</h3>
         <p>
             We do use cookies to store information, such as your personal preferences when you
@@ -132,7 +90,7 @@
         <p>
             Marko Ivančić, cicnavi [at] gmail.com
         </p>
-        <p>Last edited on Thu 5 Nov, 2015 17:58 CET</p>
+        <p>Last edited on 23 May, 2018 17:58 CET</p>
     </div>
 </template>
 

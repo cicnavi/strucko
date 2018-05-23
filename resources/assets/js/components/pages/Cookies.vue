@@ -18,7 +18,7 @@
         </p>
         <h3>About this Cookie policy</h3>
         <p>
-            This Cookie Policy applies to strucko.com ("the Website"). In this Cookie Policy,
+            This Cookie Policy applies to https://strucko.com ("the Website"). In this Cookie Policy,
             we refer to the Website regardless of how you access the network.
             By accessing the Website, you agree that this Cookie Policy will apply
             whenever you access the Website on any device.
@@ -98,17 +98,12 @@
             3. Our own ad serving and management cookies
             <br>
             We sell space on our website to advertisers - they pay for the content
-            you enjoy for free. As part of this, we use several services to
-            help us and advertisers understand what adverts you might be interested in.
+            you enjoy for free.
             These cookies hold information about the computer - they do not hold
             personal information about you (ie it is not linked to you as an individual).
-            But they might hold a record of what other websites you have looked at -
-            so we could show you a car advert if you have previously visited a motoring website.
             These are the services we use and how you can control those cookies.
             Please note that turning off advertising cookies will not mean that you
             are not served any advertising merely that it will not be tailored to your interests.
-            <br>
-            Doubleclick (advertising): Privacy policy at http://www.google.com/doubleclick/privacy/ and opt out viahttp://www.youronlinechoices.com/uk/
             <br>
             Google Adsense (ad partner): Privacy policy at https://support.google.com/adsense/bin/answer.py?hl=en-GB&amp;utm_medium=link&amp;gsessionid=DyXLmLB1J1MxXckh6tX6AQ&amp;utm_campaign=ww-ww-et-asfe_&amp;utm_source=aso&amp;answer=48182 and opt-out via https://www.google.com/settings/ads/onweb/.
             <br><br>
@@ -117,15 +112,13 @@
             Advertisements on the Website are provided by other organisations.
             Our advertising partners will serve advertisements that they believe
             are most likely to be of interest to you, based on information about
-            your visit to the Website and other websites. In order to do this,
+            your visit to the Website. In order to do this,
             our advertising partner may need to place a cookie on your computer.
             These cookies hold information about the computer - they do not hold
             personal information about you (ie it is not linked to you as an individual).
             For more information about this type of online behavioural advertising,
             about cookies, and about how to turn this feature off,
             please visit http://www.youronlinechoices.com/uk/
-            Please note that turning off advertising cookies will not mean that you
-            are not served any advertising merely that it will not be tailored to your interests.
             <br><br>
             5. Site management cookies
             <br>
