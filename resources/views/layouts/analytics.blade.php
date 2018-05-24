@@ -6,5 +6,6 @@
 
   ga('create', 'UA-12424243-10', 'auto');
   ga('send', 'pageview');
+  ga('set', 'anonymizeIp', true);
 
 </script>
