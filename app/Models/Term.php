@@ -55,7 +55,11 @@ class Term extends Model
 			    ->whereHas('translation', function ($query) use ($translateTo) {
 			    	$query->where('language_id', $translateTo);
 			    })
-			    ->with('translation', 'translation.language', 'translation.status')
+			    ->with('translation',
+                    'translation.language',
+                    'translation.status',
+                    'translation.definitions',
+                    'translation.partOfSpeech')
 			    ->orderBy('status_id', 'desc')
 			    ->orderBy('votes_sum', 'desc');
 	    }]);

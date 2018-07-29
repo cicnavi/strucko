@@ -6,22 +6,46 @@
                     <div class="row" >
                         <div class="col-xs-12">
                             <div v-if="results.exactMatch">
-                                <h2>
-                                    {{ results.exactMatch.term }}
-                                    <small>
-                                        <em v-for="(translation, index) in results.exactMatch.translations">
-                                            {{ translation.translation.term }}<span v-if="index != ( results.exactMatch.translations.length - 1)">,</span>
-                                        </em>
-                                    </small>
-                                </h2>
-                                <p v-for="definition in results.exactMatch.definitions">
-                                    {{ definition.definition }}
-                                    <small style="font-style: italic;">
-                                        <a :href="definition.link" :title="definition.source" target="_blank">
-                                            source
-                                        </a>
-                                    </small>
-                                </p>
+                                <div class="row">
+                                    <div class="col-sm-6">                                   
+                                        <h2>
+                                            {{ results.exactMatch.term }}
+                                            <small>
+                                                <em>
+                                                    {{ results.exactMatch.part_of_speech.part_of_speech.toLowerCase() }}
+                                                </em>
+                                            </small>
+                                        </h2>
+                                        <p v-for="definition in results.exactMatch.definitions">
+                                            {{ definition.definition }}
+                                            <small style="font-style: italic;">
+                                                <a :href="definition.link" :title="definition.source" target="_blank">
+                                                    source
+                                                </a>
+                                            </small>
+                                        </p>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div v-for="(translation, index) in results.exactMatch.translations">
+                                            <h2>
+                                                {{ translation.translation.term }}
+                                            </h2>
+                                            <p v-for="definition in translation.translation.definitions">
+                                                {{ definition.definition }}
+                                                <small style="font-style: italic;">
+                                                    <a :href="definition.link" :title="definition.source" target="_blank">
+                                                        source
+                                                    </a>
+                                                </small>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-12">                                    
+                                        
+                                    </div>
+                                </div>
                             </div>
                             <div v-else class="text-info text-center">
                                     <h4>No results...</h4>

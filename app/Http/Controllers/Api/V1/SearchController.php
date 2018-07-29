@@ -20,15 +20,15 @@ class SearchController extends Controller
 	        ->where('term', $request->get('term'))
 	        ->where('language_id', $request->get('language_id'))
 		    ->withTranslations($request->get('translate_to'))
-            ->with('definitions')
+            ->with('definitions', 'partOfSpeech')
             ->first();
 
 	    if ($exactMatch) {
-	    	$results['exactMatch'] = $exactMatch;
+	    	$results['exactMatch'] = $exactMatch->toArray();
 	    }
 
 	    $similarTerms = Term::greaterThanRejected()
-	        ->where('term', '!=', $request->get('term'))
+	        ->where('term', '<>', $request->get('term'))
             ->where('term', 'like', '%' . $request->get('term') . '%')
 		    ->where('language_id', $request->get('language_id'))
 		    ->inRandomOrder()
@@ -39,7 +39,7 @@ class SearchController extends Controller
 		    ->get();
 
 	    if ($similarTerms->isNotEmpty()) {
-	    	$results['similarTerms'] = $similarTerms;
+	    	$results['similarTerms'] = $similarTerms->toArray();
 	    }
 
 
