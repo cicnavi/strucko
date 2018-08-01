@@ -23,6 +23,9 @@ export const store = new Vuex.Store({
                 state.searchParams.translate_to &&
                 state.searchParams.term &&
                 state.searchParams.scientific_field_id);
+        },
+        getLanguageById: (state) => (languageId) => {
+            return state.languages.find(language => language.id === languageId);
         }
     },
     mutations: {

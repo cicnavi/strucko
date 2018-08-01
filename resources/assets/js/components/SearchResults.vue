@@ -7,7 +7,10 @@
                         <div class="col-xs-12">
                             <div v-if="results.exactMatch">
                                 <div class="row">
-                                    <div class="col-sm-6">                                   
+                                    <div class="col-sm-6">
+                                        <p>
+                                            <em>{{ this.$store.getters.getLanguageById(this.language_id).ref_name }}</em>
+                                        </p>
                                         <h2>
                                             {{ results.exactMatch.term }}
                                             <small>
@@ -26,6 +29,9 @@
                                         </p>
                                     </div>
                                     <div class="col-sm-6">
+                                        <p>
+                                            <em>{{ this.$store.getters.getLanguageById(this.translate_to).ref_name }}</em>
+                                        </p>
                                         <div v-for="(translation, index) in results.exactMatch.translations">
                                             <h2>
                                                 {{ translation.translation.term }}
