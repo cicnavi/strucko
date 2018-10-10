@@ -18,7 +18,7 @@ window.Vue = require('vue');
 import { store } from "./store/store";
 import { router } from "./router/router";
 
-import SearchForm from './components/SearchForm';
+import Home from './components/Home';
 
 const app = new Vue({
     el: '#app',
@@ -28,7 +28,7 @@ const app = new Vue({
         appName: 'Strucko app'
     },
     components: {
-        SearchForm
+        Home
     },
     methods: {
 

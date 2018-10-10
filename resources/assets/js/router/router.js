@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 
 Vue.use(VueRouter);
 
+import Home from '../components/Home';
 import SearchForm from '../components/SearchForm';
 import SearchResults from '../components/SearchResults';
 import About from '../components/pages/About';
@@ -24,7 +25,7 @@ export const router = new VueRouter({
         {
             path: '/',
             name: 'home',
-            component: SearchForm,
+            component: Home,
             children: [
                 {
                     path: 'search/:language_id/:translate_to',

@@ -15,7 +15,8 @@ export const store = new Vuex.Store({
             translate_to: 'hrv',
             term: '',
             scientific_field_id: 19
-        }
+        },
+        mode: 'search'
     },
     getters: {
         searchIsGoodToGo: state => {
@@ -46,6 +47,9 @@ export const store = new Vuex.Store({
         },
         setSearchParamTerm(state, value) {
             state.searchParams.term = value;
+        },
+        setMode(state, value) {
+            state.mode = value;
         }
     },
     actions: {

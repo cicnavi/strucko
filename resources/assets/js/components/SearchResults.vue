@@ -9,7 +9,7 @@
                                 <div class="row">
                                     <div class="col-sm-6">
                                         <p>
-                                            <em>{{ this.$store.getters.getLanguageById(this.language_id).ref_name }}</em>
+                                            <strong><em>{{ this.$store.getters.getLanguageById(this.language_id).ref_name }}</em></strong>
                                         </p>
                                         <h2>
                                             {{ results.exactMatch.term }}
@@ -30,7 +30,7 @@
                                     </div>
                                     <div class="col-sm-6">
                                         <p>
-                                            <em>{{ this.$store.getters.getLanguageById(this.translate_to).ref_name }}</em>
+                                            <strong><em>{{ this.$store.getters.getLanguageById(this.translate_to).ref_name }}</em></strong>
                                         </p>
                                         <div v-for="(translation, index) in results.exactMatch.translations">
                                             <h2>

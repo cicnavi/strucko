@@ -6,6 +6,7 @@ use App\Models\Language;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class LanguageController extends Controller
 {
@@ -18,5 +19,25 @@ class LanguageController extends Controller
 	    });
 
 		return response()->json($languages);
+    }
+
+    public function letters(Language $language)
+    {
+		$cacheName = 'letters-' . $language->id;
+
+//		$letters = Cache::remember($cacheName, 60, function () {
+//			DB::table('terms')->select('language_id')
+//			->limit(5)
+//			->get(10);
+//		});
+
+	    $letters = DB::select(
+	    	"SELECT DISTINCT LEFT(term, 1) as letter
+	    	FROM strucko.terms
+	    	WHERE language_id = '" . $language->id . "'
+	    	ORDER BY letter"
+	    );
+
+	    return response()->json($letters);
     }
 }
