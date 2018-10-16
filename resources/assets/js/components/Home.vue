@@ -10,7 +10,7 @@
             <div>
 
                 <!-- Nav tabs -->
-                <ul class="nav nav-tabs" role="tablist">
+                <ul class="nav nav-tabs nav-justified" role="tablist">
                     <li role="presentation"
                         :class="mode == 'search' ? activeTabClass : ''"
                     >

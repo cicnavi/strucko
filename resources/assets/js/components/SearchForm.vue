@@ -10,7 +10,7 @@
                                class="form-control input-lg"
                                placeholder="Enter term"
                                aria-describedby="termHelp"
-                               v-model.lazy.trim="searchParamTerm"
+                               v-model.lazy.trim="searchParamsTerm"
                                @keyup.enter="go" >
 
                         <span class="input-group-btn">
@@ -57,13 +57,13 @@
                     this.$router.push({
                         name: 'search',
                         params: {
-                            language_id: this.searchParams.language_id,
-                            translate_to: this.searchParams.translate_to
+                            language_id: this.languageParams.language_id,
+                            translate_to: this.languageParams.translate_to
                         },
                         query: {
                             term: this.searchParams.term
                         }
-                    })
+                    });
                 } else {
                     this.status.goodToGo = false;
                 }
@@ -79,12 +79,15 @@
             searchParams() {
                 return this.$store.state.searchParams;
             },
-            searchParamTerm: {
+            languageParams() {
+                return this.$store.state.languageParams;
+            },
+            searchParamsTerm: {
                 get() {
                     return this.searchParams.term;
                 },
                 set(value) {
-                    this.$store.commit('setSearchParamTerm', value);
+                    this.$store.commit('setSearchParamsTerm', value);
                 }
             }
         }

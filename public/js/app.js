@@ -43689,17 +43689,22 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
     state: {
         languages: [],
         languagesLoaded: false,
-        searchParams: {
+        languageParams: {
             language_id: 'eng',
-            translate_to: 'hrv',
+            translate_to: 'hrv'
+        },
+        searchParams: {
             term: '',
+            scientific_field_id: 19
+        },
+        browseParams: {
             scientific_field_id: 19
         },
         mode: 'search'
     },
     getters: {
         searchIsGoodToGo: function searchIsGoodToGo(state) {
-            return state.searchParams.language_id && state.searchParams.translate_to && state.searchParams.term && state.searchParams.scientific_field_id;
+            return state.languageParams.language_id && state.languageParams.translate_to && state.searchParams.term && state.searchParams.scientific_field_id;
         },
         getLanguageById: function getLanguageById(state) {
             return function (languageId) {
@@ -43715,17 +43720,19 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
             state.languagesLoaded = true;
         },
         setSearchParams: function setSearchParams(state, payload) {
-            state.searchParams.language_id = payload.language_id;
-            state.searchParams.translate_to = payload.translate_to;
             state.searchParams.term = payload.term;
         },
-        setSearchParamLanguageId: function setSearchParamLanguageId(state, value) {
-            state.searchParams.language_id = value;
+        setLanguageParams: function setLanguageParams(state, payload) {
+            state.languageParams.language_id = payload.language_id;
+            state.languageParams.translate_to = payload.translate_to;
         },
-        setSearchParamTranslateTo: function setSearchParamTranslateTo(state, value) {
-            state.searchParams.translate_to = value;
+        setLanguageParamsLanguageId: function setLanguageParamsLanguageId(state, value) {
+            state.languageParams.language_id = value;
         },
-        setSearchParamTerm: function setSearchParamTerm(state, value) {
+        setLanguageParamsTranslateTo: function setLanguageParamsTranslateTo(state, value) {
+            state.languageParams.translate_to = value;
+        },
+        setSearchParamsTerm: function setSearchParamsTerm(state, value) {
             state.searchParams.term = value;
         },
         setMode: function setMode(state, value) {
@@ -44863,20 +44870,23 @@ if (window.indexedDB) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_SearchForm___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__components_SearchForm__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_SearchResults__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_SearchResults___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__components_SearchResults__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_pages_About__ = __webpack_require__(77);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_pages_About___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__components_pages_About__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_pages_TermsOfUse__ = __webpack_require__(82);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_pages_TermsOfUse___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6__components_pages_TermsOfUse__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_pages_Privacy__ = __webpack_require__(87);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_pages_Privacy___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__components_pages_Privacy__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_pages_Cookies__ = __webpack_require__(92);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_pages_Cookies___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__components_pages_Cookies__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__components_pages_Disclaimer__ = __webpack_require__(97);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__components_pages_Disclaimer___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__components_pages_Disclaimer__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_BrowseForm__ = __webpack_require__(71);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_BrowseForm___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__components_BrowseForm__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_pages_About__ = __webpack_require__(77);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_pages_About___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6__components_pages_About__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_pages_TermsOfUse__ = __webpack_require__(82);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_pages_TermsOfUse___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__components_pages_TermsOfUse__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_pages_Privacy__ = __webpack_require__(87);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_pages_Privacy___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__components_pages_Privacy__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__components_pages_Cookies__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__components_pages_Cookies___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__components_pages_Cookies__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__components_pages_Disclaimer__ = __webpack_require__(97);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__components_pages_Disclaimer___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__components_pages_Disclaimer__);
 
 
 
 __WEBPACK_IMPORTED_MODULE_0_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1_vue_router__["a" /* default */]);
+
 
 
 
@@ -44912,8 +44922,18 @@ var router = new __WEBPACK_IMPORTED_MODULE_1_vue_router__["a" /* default */]({
                     term: route.query.term
                 };
             }
+        }, {
+            path: 'browse/:language_id/:translate_to',
+            name: 'browse',
+            component: __WEBPACK_IMPORTED_MODULE_5__components_BrowseForm___default.a,
+            props: function props(route) {
+                return {
+                    language_id: route.params.language_id,
+                    translate_to: route.params.translate_to
+                };
+            }
         }]
-    }, { path: '/about', name: 'about', component: __WEBPACK_IMPORTED_MODULE_5__components_pages_About___default.a }, { path: '/tou', name: 'tou', component: __WEBPACK_IMPORTED_MODULE_6__components_pages_TermsOfUse___default.a }, { path: '/privacy', name: 'privacy', component: __WEBPACK_IMPORTED_MODULE_7__components_pages_Privacy___default.a }, { path: '/cookies', name: 'cookies', component: __WEBPACK_IMPORTED_MODULE_8__components_pages_Cookies___default.a }, { path: '/disclaimer', name: 'disclaimer', component: __WEBPACK_IMPORTED_MODULE_9__components_pages_Disclaimer___default.a }]
+    }, { path: '/about', name: 'about', component: __WEBPACK_IMPORTED_MODULE_6__components_pages_About___default.a }, { path: '/tou', name: 'tou', component: __WEBPACK_IMPORTED_MODULE_7__components_pages_TermsOfUse___default.a }, { path: '/privacy', name: 'privacy', component: __WEBPACK_IMPORTED_MODULE_8__components_pages_Privacy___default.a }, { path: '/cookies', name: 'cookies', component: __WEBPACK_IMPORTED_MODULE_9__components_pages_Cookies___default.a }, { path: '/disclaimer', name: 'disclaimer', component: __WEBPACK_IMPORTED_MODULE_10__components_pages_Disclaimer___default.a }]
 
 });
 
@@ -47881,21 +47901,24 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         searchParams: function searchParams() {
             return this.$store.state.searchParams;
         },
+        languageParams: function languageParams() {
+            return this.$store.state.languageParams;
+        },
 
-        searchParamLanguageId: {
+        languageParamsLanguageId: {
             get: function get() {
-                return this.searchParams.language_id;
+                return this.languageParams.language_id;
             },
             set: function set(value) {
-                this.$store.commit('setSearchParamLanguageId', value);
+                this.$store.commit('setLanguageParamsLanguageId', value);
             }
         },
-        searchParamTranslateTo: {
+        languageParamsTranslateTo: {
             get: function get() {
-                return this.searchParams.translate_to;
+                return this.languageParams.translate_to;
             },
             set: function set(value) {
-                this.$store.commit('setSearchParamTranslateTo', value);
+                this.$store.commit('setLanguageParamsTranslateTo', value);
             }
         }
     }
@@ -48147,8 +48170,8 @@ var render = function() {
                           {
                             name: "model",
                             rawName: "v-model",
-                            value: _vm.searchParamLanguageId,
-                            expression: "searchParamLanguageId"
+                            value: _vm.languageParamsLanguageId,
+                            expression: "languageParamsLanguageId"
                           }
                         ],
                         staticClass: "form-control",
@@ -48177,7 +48200,8 @@ var render = function() {
                                 var val = "_value" in o ? o._value : o.value
                                 return val
                               })
-                            _vm.searchParamLanguageId = $event.target.multiple
+                            _vm.languageParamsLanguageId = $event.target
+                              .multiple
                               ? $$selectedVal
                               : $$selectedVal[0]
                           }
@@ -48212,8 +48236,8 @@ var render = function() {
                           {
                             name: "model",
                             rawName: "v-model",
-                            value: _vm.searchParamTranslateTo,
-                            expression: "searchParamTranslateTo"
+                            value: _vm.languageParamsTranslateTo,
+                            expression: "languageParamsTranslateTo"
                           }
                         ],
                         staticClass: "form-control",
@@ -48242,7 +48266,8 @@ var render = function() {
                                 var val = "_value" in o ? o._value : o.value
                                 return val
                               })
-                            _vm.searchParamTranslateTo = $event.target.multiple
+                            _vm.languageParamsTranslateTo = $event.target
+                              .multiple
                               ? $$selectedVal
                               : $$selectedVal[0]
                           }
@@ -48402,8 +48427,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 this.$router.push({
                     name: 'search',
                     params: {
-                        language_id: this.searchParams.language_id,
-                        translate_to: this.searchParams.translate_to
+                        language_id: this.languageParams.language_id,
+                        translate_to: this.languageParams.translate_to
                     },
                     query: {
                         term: this.searchParams.term
@@ -48424,13 +48449,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         searchParams: function searchParams() {
             return this.$store.state.searchParams;
         },
+        languageParams: function languageParams() {
+            return this.$store.state.languageParams;
+        },
 
-        searchParamTerm: {
+        searchParamsTerm: {
             get: function get() {
                 return this.searchParams.term;
             },
             set: function set(value) {
-                this.$store.commit('setSearchParamTerm', value);
+                this.$store.commit('setSearchParamsTerm', value);
             }
         }
     }
@@ -48607,14 +48635,19 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
         },
         setSearchParams: function setSearchParams() {
             this.$store.commit('setSearchParams', {
-                language_id: this.language_id,
-                translate_to: this.translate_to,
                 term: this.term
+            });
+        },
+        setLanguageParams: function setLanguageParams() {
+            this.$store.commit('setLanguageParams', {
+                language_id: this.language_id,
+                translate_to: this.translate_to
             });
         },
         search: function search() {
 
             this.setSearchParams();
+            this.setLanguageParams();
 
             if (!this.goodToGo) {
                 this.setStatus(true, 'State is not good to go!', 'Please select appropriate option and enter term.');
@@ -48627,7 +48660,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
             var app = this;
 
             axios.get('api/v1/search', {
-                params: _extends({}, app.$store.state.searchParams)
+                params: _extends({}, app.$store.state.searchParams, app.$store.state.languageParams)
             }).then(function (response) {
                 app.searchInProgress = false;
                 app.results = response.data;
@@ -48944,8 +48977,8 @@ var render = function() {
                 {
                   name: "model",
                   rawName: "v-model.lazy.trim",
-                  value: _vm.searchParamTerm,
-                  expression: "searchParamTerm",
+                  value: _vm.searchParamsTerm,
+                  expression: "searchParamsTerm",
                   modifiers: { lazy: true, trim: true }
                 }
               ],
@@ -48955,7 +48988,7 @@ var render = function() {
                 placeholder: "Enter term",
                 "aria-describedby": "termHelp"
               },
-              domProps: { value: _vm.searchParamTerm },
+              domProps: { value: _vm.searchParamsTerm },
               on: {
                 keyup: function($event) {
                   if (
@@ -48967,7 +49000,7 @@ var render = function() {
                   return _vm.go($event)
                 },
                 change: function($event) {
-                  _vm.searchParamTerm = $event.target.value.trim()
+                  _vm.searchParamsTerm = $event.target.value.trim()
                 },
                 blur: function($event) {
                   _vm.$forceUpdate()
@@ -49139,18 +49172,40 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     name: "browse-form",
     data: function data() {
         return {
-            name: 'browse-form'
+            name: 'browse-form',
+            letters: []
         };
     },
-    methods: {},
+    props: ['language_id', 'translate_to'],
+    methods: {
+        getLetters: function getLetters() {
+            var app = this;
+
+            axios.get('api/v1/languages/' + this.languageParams.language_id + '/letters').then(function (response) {
+                console.log(response);
+                app.letters = response.data;
+            }).catch(function (error) {
+                console.error(error);
+            });
+        }
+    },
     components: {},
-    computed: {}
+    computed: {
+        languageParams: function languageParams() {
+            return this.$store.state.languageParams;
+        }
+    },
+    created: function created() {
+        this.getLetters();
+    }
 });
 
 /***/ }),
@@ -49161,26 +49216,29 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row" }, [
-      _c("div", { staticClass: "col-xs-12" }, [
-        _c("div", { staticClass: "row" }, [
-          _c("div", { staticClass: "col-xs-12" }, [
-            _c("div", { staticClass: "row" }, [
-              _vm._v("\n                    Browse Form\n                ")
-            ])
-          ])
+  return _c("div", { staticClass: "row" }, [
+    _c("div", { staticClass: "col-xs-12" }, [
+      _c("div", { staticClass: "row" }, [
+        _c("div", { staticClass: "col-xs-12" }, [
+          _c(
+            "div",
+            { staticClass: "row" },
+            _vm._l(_vm.letters, function(letter) {
+              return _c("a", [
+                _vm._v(
+                  "\n                        " +
+                    _vm._s(letter.letter) +
+                    "\n                    "
+                )
+              ])
+            })
+          )
         ])
       ])
     ])
-  }
-]
+  ])
+}
+var staticRenderFns = []
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
@@ -49205,61 +49263,68 @@ var render = function() {
       ]),
       _vm._v(" "),
       _c("div", [
-        _c("ul", { staticClass: "nav nav-tabs", attrs: { role: "tablist" } }, [
-          _c(
-            "li",
-            {
-              class: _vm.mode == "search" ? _vm.activeTabClass : "",
-              attrs: { role: "presentation" }
-            },
-            [
-              _c(
-                "a",
-                {
-                  attrs: {
-                    href: "#search",
-                    "aria-controls": "search",
-                    role: "tab",
-                    "data-toggle": "tab"
-                  },
-                  on: {
-                    click: function($event) {
-                      _vm.setMode("search", $event)
+        _c(
+          "ul",
+          {
+            staticClass: "nav nav-tabs nav-justified",
+            attrs: { role: "tablist" }
+          },
+          [
+            _c(
+              "li",
+              {
+                class: _vm.mode == "search" ? _vm.activeTabClass : "",
+                attrs: { role: "presentation" }
+              },
+              [
+                _c(
+                  "a",
+                  {
+                    attrs: {
+                      href: "#search",
+                      "aria-controls": "search",
+                      role: "tab",
+                      "data-toggle": "tab"
+                    },
+                    on: {
+                      click: function($event) {
+                        _vm.setMode("search", $event)
+                      }
                     }
-                  }
-                },
-                [_vm._v("Search")]
-              )
-            ]
-          ),
-          _vm._v(" "),
-          _c(
-            "li",
-            {
-              class: _vm.mode == "browse" ? _vm.activeTabClass : "",
-              attrs: { role: "presentation" }
-            },
-            [
-              _c(
-                "a",
-                {
-                  attrs: {
-                    href: "#browse",
-                    "aria-controls": "browse",
-                    role: "tab",
-                    "data-toggle": "tab"
                   },
-                  on: {
-                    click: function($event) {
-                      _vm.setMode("browse", $event)
+                  [_vm._v("Search")]
+                )
+              ]
+            ),
+            _vm._v(" "),
+            _c(
+              "li",
+              {
+                class: _vm.mode == "browse" ? _vm.activeTabClass : "",
+                attrs: { role: "presentation" }
+              },
+              [
+                _c(
+                  "a",
+                  {
+                    attrs: {
+                      href: "#browse",
+                      "aria-controls": "browse",
+                      role: "tab",
+                      "data-toggle": "tab"
+                    },
+                    on: {
+                      click: function($event) {
+                        _vm.setMode("browse", $event)
+                      }
                     }
-                  }
-                },
-                [_vm._v("Browse")]
-              )
-            ]
-          )
-        ]),
+                  },
+                  [_vm._v("Browse")]
+                )
+              ]
+            )
+          ]
+        ),
         _vm._v(" "),
         _c("div", { staticClass: "tab-content" }, [
           _c(

@@ -6,6 +6,7 @@ Vue.use(VueRouter);
 import Home from '../components/Home';
 import SearchForm from '../components/SearchForm';
 import SearchResults from '../components/SearchResults';
+import BrowseForm from '../components/BrowseForm';
 import About from '../components/pages/About';
 import TermsOfUse from '../components/pages/TermsOfUse';
 import Privacy from '../components/pages/Privacy';
@@ -36,6 +37,17 @@ export const router = new VueRouter({
                             language_id: route.params.language_id,
                             translate_to: route.params.translate_to,
                             term: route.query.term
+                        };
+                    }
+                },
+                {
+                    path: 'browse/:language_id/:translate_to',
+                    name: 'browse',
+                    component: BrowseForm,
+                    props: (route) => {
+                        return {
+                            language_id: route.params.language_id,
+                            translate_to: route.params.translate_to,
                         };
                     }
                 }

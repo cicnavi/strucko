@@ -118,14 +118,19 @@
             },
             setSearchParams() {
                 this.$store.commit('setSearchParams', {
-                    language_id: this.language_id,
-                    translate_to: this.translate_to,
                     term: this.term
+                });
+            },
+            setLanguageParams() {
+                this.$store.commit('setLanguageParams', {
+                    language_id: this.language_id,
+                    translate_to: this.translate_to
                 });
             },
             search() {
 
                 this.setSearchParams();
+                this.setLanguageParams();
 
                 if ( ! this.goodToGo) {
                     this.setStatus(
@@ -143,7 +148,8 @@
 
                 axios.get('api/v1/search', {
                     params: {
-                        ...app.$store.state.searchParams
+                        ...app.$store.state.searchParams,
+                        ...app.$store.state.languageParams
                     }
                 })
                 .then(function (response) {

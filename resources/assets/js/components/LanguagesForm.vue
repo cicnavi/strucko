@@ -8,7 +8,7 @@
 
                             <div class="form-group">
                                 <label>Language</label>
-                                <select class="form-control" v-model="searchParamLanguageId" @keyup.enter="go">
+                                <select class="form-control" v-model="languageParamsLanguageId" @keyup.enter="go">
                                     <option value="" disabled>Select language</option>
                                     <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
                                 </select>
@@ -18,7 +18,7 @@
                         <div class="col-xs-12 col-sm-6">
                             <div class="form-group">
                                 <label>Translate to</label>
-                                <select class="form-control" v-model="searchParamTranslateTo" @keyup.enter="go">
+                                <select class="form-control" v-model="languageParamsTranslateTo" @keyup.enter="go">
                                     <option value="" disabled>Select language</option>
                                     <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
                                 </select>
@@ -67,20 +67,23 @@
             searchParams() {
                 return this.$store.state.searchParams;
             },
-            searchParamLanguageId: {
+            languageParams() {
+                return this.$store.state.languageParams;
+            },
+            languageParamsLanguageId: {
                 get() {
-                    return this.searchParams.language_id;
+                    return this.languageParams.language_id;
                 },
                 set(value) {
-                    this.$store.commit('setSearchParamLanguageId', value);
+                    this.$store.commit('setLanguageParamsLanguageId', value);
                 }
             },
-            searchParamTranslateTo: {
+            languageParamsTranslateTo: {
                 get() {
-                    return this.searchParams.translate_to;
+                    return this.languageParams.translate_to;
                 },
                 set(value) {
-                    this.$store.commit('setSearchParamTranslateTo', value);
+                    this.$store.commit('setLanguageParamsTranslateTo', value);
                 }
             }
         }

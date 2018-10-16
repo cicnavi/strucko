@@ -25,18 +25,14 @@ class LanguageController extends Controller
     {
 		$cacheName = 'letters-' . $language->id;
 
-//		$letters = Cache::remember($cacheName, 60, function () {
-//			DB::table('terms')->select('language_id')
-//			->limit(5)
-//			->get(10);
-//		});
-
-	    $letters = DB::select(
-	    	"SELECT DISTINCT LEFT(term, 1) as letter
-	    	FROM strucko.terms
-	    	WHERE language_id = '" . $language->id . "'
-	    	ORDER BY letter"
-	    );
+		$letters = Cache::remember($cacheName, 60, function () use ($language) {
+			return DB::select(
+		    	"SELECT DISTINCT LEFT(term, 1) as letter
+		    	FROM strucko.terms
+		    	WHERE language_id = '" . $language->id . "'
+		    	ORDER BY letter"
+		    );
+		});
 
 	    return response()->json($letters);
     }

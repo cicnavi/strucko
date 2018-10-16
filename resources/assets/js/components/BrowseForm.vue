@@ -4,7 +4,9 @@
             <div class="row">
                 <div class="col-xs-12">
                     <div class="row">
-                        Browse Form
+                        <a v-for="letter in letters">
+                            {{ letter.letter }}
+                        </a>
                     </div>
 
                 </div>
@@ -19,18 +21,36 @@
         name: "browse-form",
         data: function () {
             return {
-                name: 'browse-form'
+                name: 'browse-form',
+                letters: []
             }
         },
+        props: ['language_id', 'translate_to'],
         methods: {
+            getLetters() {
+                let app = this;
 
+                axios.get('api/v1/languages/' + this.languageParams.language_id + '/letters')
+                    .then(function (response) {
+                        console.log(response);
+                        app.letters = response.data;
+                    })
+                    .catch(function (error) {
+                        console.error(error);
+                    });
+            }
         },
         components: {
 
         },
         computed: {
-
-        }
+            languageParams() {
+                return this.$store.state.languageParams;
+            }
+        },
+        created() {
+            this.getLetters();
+        },
     }
 </script>
 

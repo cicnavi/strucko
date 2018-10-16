@@ -10,20 +10,27 @@ export const store = new Vuex.Store({
     state: {
         languages: [],
         languagesLoaded: false,
-        searchParams: {
+        languageParams: {
             language_id: 'eng',
             translate_to: 'hrv',
+        },
+        searchParams: {
             term: '',
+            scientific_field_id: 19
+        },
+        browseParams: {
             scientific_field_id: 19
         },
         mode: 'search'
     },
     getters: {
         searchIsGoodToGo: state => {
-            return (state.searchParams.language_id &&
-                state.searchParams.translate_to &&
+            return (
+                state.languageParams.language_id &&
+                state.languageParams.translate_to &&
                 state.searchParams.term &&
-                state.searchParams.scientific_field_id);
+                state.searchParams.scientific_field_id
+            );
         },
         getLanguageById: (state) => (languageId) => {
             return state.languages.find(language => language.id === languageId);
@@ -35,17 +42,19 @@ export const store = new Vuex.Store({
             state.languagesLoaded = true;
         },
         setSearchParams(state, payload) {
-            state.searchParams.language_id = payload.language_id;
-            state.searchParams.translate_to = payload.translate_to;
             state.searchParams.term = payload.term;
         },
-        setSearchParamLanguageId(state, value) {
-            state.searchParams.language_id = value;
+        setLanguageParams(state, payload) {
+            state.languageParams.language_id = payload.language_id;
+            state.languageParams.translate_to = payload.translate_to;
         },
-        setSearchParamTranslateTo(state, value) {
-            state.searchParams.translate_to = value;
+        setLanguageParamsLanguageId(state, value) {
+            state.languageParams.language_id = value;
         },
-        setSearchParamTerm(state, value) {
+        setLanguageParamsTranslateTo(state, value) {
+            state.languageParams.translate_to = value;
+        },
+        setSearchParamsTerm(state, value) {
             state.searchParams.term = value;
         },
         setMode(state, value) {
