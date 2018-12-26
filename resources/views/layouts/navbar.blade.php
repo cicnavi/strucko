@@ -11,9 +11,15 @@
             </button>
 
             <!-- Branding Image -->
+            <div>
+                
             <a class="navbar-brand" href="{{ url('/') }}">
-                {{ config('app.name', 'Strucko') }}
+                Strucko
+                <small>IT dictionary</small>
             </a>
+               
+            </div>
+            
         </div>
 
         <div class="collapse navbar-collapse" id="app-navbar-collapse">
