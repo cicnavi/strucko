@@ -48,6 +48,7 @@ export const router = new VueRouter({
                         return {
                             language_id: route.params.language_id,
                             translate_to: route.params.translate_to,
+                            letter: route.query.letter
                         };
                     }
                 }

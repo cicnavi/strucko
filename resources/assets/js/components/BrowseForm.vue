@@ -3,12 +3,13 @@
         <div class="col-xs-12">
             <div class="row">
                 <div class="col-xs-12">
-                    <div class="row">
-                        <a v-for="letter in letters">
-                            {{ letter.letter }}
-                        </a>
-                    </div>
-
+                    <button type="button" 
+                        class="btn btn-primary btn-sm"
+                        v-for="letter in letters"
+                        @click.prevent="getTermsByLetter"
+                    >
+                        {{ letter.letter }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -25,19 +26,24 @@
                 letters: []
             }
         },
-        props: ['language_id', 'translate_to'],
+        props: ['language_id', 'translate_to', 'letter'],
         methods: {
             getLetters() {
                 let app = this;
 
                 axios.get('api/v1/languages/' + this.languageParams.language_id + '/letters')
                     .then(function (response) {
-                        console.log(response);
                         app.letters = response.data;
                     })
                     .catch(function (error) {
                         console.error(error);
                     });
+            },
+            getTermsByLetter(event) {
+                console.log(event);
+                if (this.letter && this.letters.includes(this.letter)) {
+                    console.log('možeš tražit po ' + this.letter);
+                }
             }
         },
         components: {
