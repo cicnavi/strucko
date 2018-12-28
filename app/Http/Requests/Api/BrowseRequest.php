@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class SearchRequest extends FormRequest
+class BrowseRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,7 @@ class SearchRequest extends FormRequest
     public function rules()
     {
         return [
-            'term' => 'required|string|max:255',
+            'letter' => 'required|string|max:1',
 	        'language_id' => 'required|string|exists:languages,id',
 	        'translate_to' => 'required|string|exists:languages,id',
         ];

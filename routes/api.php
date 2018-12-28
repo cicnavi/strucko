@@ -25,4 +25,5 @@ Route::group([
 	Route::get('languages', 'LanguageController@index');
 	Route::get('languages/{language}/letters', 'LanguageController@letters');
 	Route::get('search', 'SearchController@search');
+	Route::get('browse', 'BrowseController@browse');
 });

@@ -8,7 +8,7 @@
                             <div v-if="results.exactMatch">
                                 <div class="row">
                                     <div class="col-sm-6">
-                                        <p>
+                                        <p v-if="languagesLoaded == true">
                                             <strong><em>{{ this.$store.getters.getLanguageById(this.language_id).ref_name }}</em></strong>
                                         </p>
                                         <h2>
@@ -29,7 +29,7 @@
                                         </p>
                                     </div>
                                     <div class="col-sm-6">
-                                        <p>
+                                        <p v-if="languagesLoaded == true">
                                             <strong><em>{{ this.$store.getters.getLanguageById(this.translate_to).ref_name }}</em></strong>
                                         </p>
                                         <div v-for="(translation, index) in results.exactMatch.translations">
@@ -48,8 +48,8 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-xs-12">                                    
-                                        
+                                    <div class="col-xs-12">
+
                                     </div>
                                 </div>
                             </div>
@@ -169,9 +169,12 @@
         computed: {
             goodToGo() {
                 return this.$store.getters.searchIsGoodToGo;
+            },
+            languagesLoaded() {
+              return this.$store.state.languagesLoaded;
             }
         },
-        created() {
+        mounted() {
             this.search();
         },
         watch: {

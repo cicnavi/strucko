@@ -27,7 +27,7 @@ class LanguageController extends Controller
 
 		$letters = Cache::remember($cacheName, 60, function () use ($language) {
 			return DB::select(
-		    	"SELECT DISTINCT LEFT(term, 1) as letter
+		    	"SELECT DISTINCT LEFT(menu_letter, 1) as letter
 		    	FROM strucko.terms
 		    	WHERE language_id = '" . $language->id . "'
 		    	ORDER BY letter"

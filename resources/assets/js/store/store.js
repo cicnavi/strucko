@@ -10,16 +10,17 @@ export const store = new Vuex.Store({
     state: {
         languages: [],
         languagesLoaded: false,
+        scientific_field_id: 19,
         languageParams: {
             language_id: 'eng',
             translate_to: 'hrv',
         },
         searchParams: {
-            term: '',
-            scientific_field_id: 19
+            term: ''
         },
         browseParams: {
-            scientific_field_id: 19
+            letter: '',
+            page: 1
         },
         mode: 'search'
     },
@@ -29,7 +30,16 @@ export const store = new Vuex.Store({
                 state.languageParams.language_id &&
                 state.languageParams.translate_to &&
                 state.searchParams.term &&
-                state.searchParams.scientific_field_id
+                state.scientific_field_id
+            );
+        },
+        browseIsGoodToGo: state => {
+            return (
+                state.languageParams.language_id &&
+                state.languageParams.translate_to &&
+                state.browseParams.letter &&
+                state.browseParams.page &&
+                state.scientific_field_id
             );
         },
         getLanguageById: (state) => (languageId) => {
@@ -43,6 +53,10 @@ export const store = new Vuex.Store({
         },
         setSearchParams(state, payload) {
             state.searchParams.term = payload.term;
+        },
+        setBrowseParams(state, payload) {
+            state.browseParams.letter = payload.letter;
+            state.browseParams.page = payload.page;
         },
         setLanguageParams(state, payload) {
             state.languageParams.language_id = payload.language_id;

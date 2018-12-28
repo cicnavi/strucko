@@ -1,17 +1,20 @@
 <template>
     <div class="row">
-        <div class="col-xs-12">
+        <div class="col-xs-12 align-center">
             <div class="row">
                 <div class="col-xs-12">
-                    <button type="button" 
-                        class="btn btn-primary btn-sm"
-                        v-for="letter in letters"
+                    <button type="button"
+                        v-for="currentLetter in letters"
+                        class="btn btn-info btn-sm"
+                        :class="$route.name == 'browse' && currentLetter.letter == $route.params.letter ? 'active' : ''"
+                        :value="currentLetter.letter"
                         @click.prevent="getTermsByLetter"
                     >
-                        {{ letter.letter }}
+                        {{ currentLetter.letter }}
                     </button>
                 </div>
             </div>
+
         </div>
     </div>
 </template>
@@ -23,14 +26,19 @@
         data: function () {
             return {
                 name: 'browse-form',
-                letters: []
+                letters: [],
+                letter: '',
+                page: 1,
+                status: {
+                    xhrInProgress: false
+                }
             }
         },
-        props: ['language_id', 'translate_to', 'letter'],
+        props: ['setMode'],
         methods: {
             getLetters() {
                 let app = this;
-
+                // TODO use idb caching
                 axios.get('api/v1/languages/' + this.languageParams.language_id + '/letters')
                     .then(function (response) {
                         app.letters = response.data;
@@ -39,11 +47,30 @@
                         console.error(error);
                     });
             },
+            setBrowseParams() {
+                this.$store.commit('setBrowseParams', {
+                    letter: this.letter,
+                    page: this.page
+                });
+            },
             getTermsByLetter(event) {
-                console.log(event);
-                if (this.letter && this.letters.includes(this.letter)) {
-                    console.log('možeš tražit po ' + this.letter);
-                }
+                this.letter = event.target.value;
+                this.page = 1;
+                this.setBrowseParams();
+                this.setMode('browse');
+                this.$router.push({
+                    name: 'browse',
+                    params: {
+                        language_id: this.languageParams.language_id,
+                        translate_to: this.languageParams.translate_to,
+                        letter: this.browseParams.letter
+                    },
+                    query: {
+                        page: this.browseParams.page
+                    }
+                });
+
+
             }
         },
         components: {
@@ -52,6 +79,10 @@
         computed: {
             languageParams() {
                 return this.$store.state.languageParams;
+            },
+            browseParams() {
+                return this.$store.state.browseParams;
+
             }
         },
         created() {

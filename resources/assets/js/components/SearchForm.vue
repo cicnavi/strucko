@@ -24,15 +24,7 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-xs-12" v-if="status.searchInProgress">
-                    <p class="text-center">Searching...</p>
-                    <div class="loader"></div>
-                </div>
-                <div class="col-xs-12" v-else>
-                    <router-view></router-view>
-                </div>
-            </div>
+
         </div>
     </div>
 </template>
@@ -50,9 +42,11 @@
                 }
             }
         },
+        props: ['setMode'],
         methods: {
             go() {
                 if( this.goodToGo ) {
+                    this.setMode('search');
                     this.status.goodToGo = true;
                     this.$router.push({
                         name: 'search',

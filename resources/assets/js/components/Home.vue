@@ -1,52 +1,34 @@
 <template>
     <div class="row">
         <div class="col-xs-12">
+
             <div class="row">
                 <div class="col-xs-12">
                     <languages-form></languages-form>
                 </div>
             </div>
 
-            <div>
-
-                <!-- Nav tabs -->
-                <ul class="nav nav-tabs nav-justified" role="tablist">
-                    <li role="presentation"
-                        :class="mode == 'search' ? activeTabClass : ''"
-                    >
-                        <a href="#search" aria-controls="search" role="tab" data-toggle="tab"
-                            @click="setMode('search', $event)"
-                        >Search</a>
-                    </li>
-                    <li role="presentation"
-                        :class="mode == 'browse' ? activeTabClass : ''"
-                    >
-                        <a href="#browse" aria-controls="browse" role="tab" data-toggle="tab"
-                           @click="setMode('browse', $event)"
-                        >Browse</a>
-                    </li>
-                </ul>
-
-                <!-- Tab panes -->
-                <div class="tab-content">
-                    <div role="tabpanel"
-                         class="tab-pane fade"
-                         :class="mode == 'search' ? activeTabContentClass : ''"
-                         id="search">
-                        <div class="row">
-                            <div class="col-xs-12">
-                                <search-form></search-form>
-                            </div>
-                        </div>
-                    </div>
-                    <div role="tabpanel"
-                         class="tab-pane fade"
-                         :class="mode == 'browse' ? activeTabContentClass : ''"
-                         id="browse">
-                        <browse-form></browse-form>
-                    </div>
+            <div class="row">
+                <div class="col-xs-12 text-center">
+                    <browse-form :setMode="setMode"></browse-form>
                 </div>
+            </div>
 
+            <div class="row">
+                <div class="col-xs-12">
+                    <br>
+                    <search-form :setMode="setMode"></search-form>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12" v-if="status.xhrInProgress">
+                    <p class="text-center">Loading...</p>
+                    <div class="loader"></div>
+                </div>
+                <div class="col-xs-12" v-else>
+                    <router-view></router-view>
+                </div>
             </div>
 
         </div>
@@ -61,12 +43,13 @@
         name: "Home",
         data: function () {
             return {
-                activeTabClass: 'active',
-                activeTabContentClass: 'in active'
+                status: {
+                  xhrInProgress: false
+                }
             }
         },
         methods: {
-            setMode(mode, event) {
+            setMode(mode) {
                 this.$store.commit('setMode', mode);
             }
         },
