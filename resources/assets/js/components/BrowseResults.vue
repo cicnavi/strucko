@@ -13,14 +13,14 @@
                                             Browsing letter <em>{{ this.letter }}</em>
                                         </h2>
 
-                                        <div class="table-responsive">
+                                        <div >
                                           <table class="table table-striped">
                                             <thead v-if="languagesLoaded == true">
                                               <tr>
                                                 <th>
                                                   {{ this.$store.getters.getLanguageById(this.language_id).ref_name }}
                                                   /
-                                                  {{ this.$store.getters.getLanguageById(this.translate_to).ref_name }}
+                                                  <em>{{ this.$store.getters.getLanguageById(this.translate_to).ref_name }}</em>
                                                 </th>
                                               </tr>
                                             </thead>
@@ -31,7 +31,7 @@
                                                   <span v-if="term.translations.length > 0">
                                                     /
                                                     <span v-for="(translation, index) in term.translations">
-                                                      {{ translation.translation.term }}<span v-if="index < (term.translations.length - 1)">, </span>
+                                                      <em>{{ translation.translation.term }}</em><span v-if="index < (term.translations.length - 1)">, </span>
                                                     </span>
                                                   </span>
                                                 </td>
@@ -43,8 +43,48 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-xs-12">
-
+                                    <div class="col-xs-12 text-center">
+                                      <nav aria-label="Browse results pagination menu">
+                                        <ul class="pagination pagination-sm">
+                                          <li v-if="results.current_page > 1">
+                                            <a href="#" aria-label="Previous" @click.prevent="goToPage(results.current_page - 1)">
+                                              <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                          </li>
+                                          <li :class="{disabled: results.current_page == 1}">
+                                            <a href="#" @click.prevent="goToPage(1)">1</a>
+                                          </li>
+                                          <li class="disabled" v-if="results.current_page > 1">
+                                            <a disabled>...</a>
+                                          </li>
+                                          <li v-if="results.current_page > 2">
+                                            <a href="#" @click.prevent="goToPage(results.current_page - 1)">
+                                              {{ results.current_page - 1 }}
+                                            </a>
+                                          </li>
+                                          <li class="disabled" v-if="results.current_page > 1 && results.current_page < results.last_page">
+                                            <a >{{ results.current_page }}</a>
+                                          </li>
+                                          <li v-if="results.current_page < (results.last_page - 2)">
+                                            <a href="#" @click.prevent="goToPage(results.current_page + 1)">
+                                              {{ results.current_page + 1 }}
+                                            </a>
+                                          </li>
+                                          <li class="disabled" v-if="results.current_page < results.last_page">
+                                            <a disabled>...</a>
+                                          </li>
+                                          <li :class="{disabled: results.current_page == results.last_page}">
+                                            <a href="#" @click.prevent="goToPage(results.last_page)">
+                                              {{ results.last_page }}
+                                            </a>
+                                          </li>
+                                          <li v-if="results.current_page < results.last_page">
+                                            <a href="#" aria-label="Next" @click.prevent="goToPage(results.current_page + 1)">
+                                              <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                          </li>
+                                        </ul>
+                                      </nav>
                                     </div>
                                 </div>
                             </div>
@@ -110,6 +150,21 @@
                     translate_to: this.translate_to
                 });
             },
+            goToPage(page) {
+              this.currentPage = page;
+              this.setBrowseParams();
+              this.$router.push({
+                  name: 'browse',
+                  params: {
+                      language_id: this.languageParams.language_id,
+                      translate_to: this.languageParams.translate_to,
+                      letter: this.browseParams.letter
+                  },
+                  query: {
+                      page: this.browseParams.page
+                  }
+              });
+            },
             browse() {
 
                 this.setBrowseParams();
@@ -155,6 +210,13 @@
             },
             languagesLoaded() {
               return this.$store.state.languagesLoaded;
+            },
+            languageParams() {
+                return this.$store.state.languageParams;
+            },
+            browseParams() {
+                return this.$store.state.browseParams;
+
             }
         },
         created() {

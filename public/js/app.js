@@ -51227,6 +51227,46 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     name: "browse-results",
@@ -51266,6 +51306,21 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
                 translate_to: this.translate_to
             });
         },
+        goToPage: function goToPage(page) {
+            this.currentPage = page;
+            this.setBrowseParams();
+            this.$router.push({
+                name: 'browse',
+                params: {
+                    language_id: this.languageParams.language_id,
+                    translate_to: this.languageParams.translate_to,
+                    letter: this.browseParams.letter
+                },
+                query: {
+                    page: this.browseParams.page
+                }
+            });
+        },
         browse: function browse() {
 
             this.setBrowseParams();
@@ -51298,6 +51353,12 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
         },
         languagesLoaded: function languagesLoaded() {
             return this.$store.state.languagesLoaded;
+        },
+        languageParams: function languageParams() {
+            return this.$store.state.languageParams;
+        },
+        browseParams: function browseParams() {
+            return this.$store.state.browseParams;
         }
     },
     created: function created() {
@@ -51336,7 +51397,7 @@ var render = function() {
                               _c("em", [_vm._v(_vm._s(this.letter))])
                             ]),
                             _vm._v(" "),
-                            _c("div", { staticClass: "table-responsive" }, [
+                            _c("div", [
                               _c(
                                 "table",
                                 { staticClass: "table table-striped" },
@@ -51352,14 +51413,17 @@ var render = function() {
                                                     this.language_id
                                                   ).ref_name
                                                 ) +
-                                                "\n                                              /\n                                              " +
+                                                "\n                                              /\n                                              "
+                                            ),
+                                            _c("em", [
+                                              _vm._v(
                                                 _vm._s(
                                                   this.$store.getters.getLanguageById(
                                                     this.translate_to
                                                   ).ref_name
-                                                ) +
-                                                "\n                                            "
-                                            )
+                                                )
+                                              )
+                                            ])
                                           ])
                                         ])
                                       ])
@@ -51392,14 +51456,15 @@ var render = function() {
                                                       index
                                                     ) {
                                                       return _c("span", [
-                                                        _vm._v(
-                                                          "\n                                                  " +
+                                                        _c("em", [
+                                                          _vm._v(
                                                             _vm._s(
                                                               translation
                                                                 .translation
                                                                 .term
                                                             )
-                                                        ),
+                                                          )
+                                                        ]),
                                                         index <
                                                         term.translations
                                                           .length -
@@ -51426,7 +51491,237 @@ var render = function() {
                           ])
                         ]),
                         _vm._v(" "),
-                        _vm._m(0)
+                        _c("div", { staticClass: "row" }, [
+                          _c("div", { staticClass: "col-xs-12 text-center" }, [
+                            _c(
+                              "nav",
+                              {
+                                attrs: {
+                                  "aria-label": "Browse results pagination menu"
+                                }
+                              },
+                              [
+                                _c(
+                                  "ul",
+                                  { staticClass: "pagination pagination-sm" },
+                                  [
+                                    _vm.results.current_page > 1
+                                      ? _c("li", [
+                                          _c(
+                                            "a",
+                                            {
+                                              attrs: {
+                                                href: "#",
+                                                "aria-label": "Previous"
+                                              },
+                                              on: {
+                                                click: function($event) {
+                                                  $event.preventDefault()
+                                                  _vm.goToPage(
+                                                    _vm.results.current_page - 1
+                                                  )
+                                                }
+                                              }
+                                            },
+                                            [
+                                              _c(
+                                                "span",
+                                                {
+                                                  attrs: {
+                                                    "aria-hidden": "true"
+                                                  }
+                                                },
+                                                [_vm._v("«")]
+                                              )
+                                            ]
+                                          )
+                                        ])
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    _c(
+                                      "li",
+                                      {
+                                        class: {
+                                          disabled:
+                                            _vm.results.current_page == 1
+                                        }
+                                      },
+                                      [
+                                        _c(
+                                          "a",
+                                          {
+                                            attrs: { href: "#" },
+                                            on: {
+                                              click: function($event) {
+                                                $event.preventDefault()
+                                                _vm.goToPage(1)
+                                              }
+                                            }
+                                          },
+                                          [_vm._v("1")]
+                                        )
+                                      ]
+                                    ),
+                                    _vm._v(" "),
+                                    _vm.results.current_page > 1
+                                      ? _c("li", { staticClass: "disabled" }, [
+                                          _c("a", { attrs: { disabled: "" } }, [
+                                            _vm._v("...")
+                                          ])
+                                        ])
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    _vm.results.current_page > 2
+                                      ? _c("li", [
+                                          _c(
+                                            "a",
+                                            {
+                                              attrs: { href: "#" },
+                                              on: {
+                                                click: function($event) {
+                                                  $event.preventDefault()
+                                                  _vm.goToPage(
+                                                    _vm.results.current_page - 1
+                                                  )
+                                                }
+                                              }
+                                            },
+                                            [
+                                              _vm._v(
+                                                "\n                                          " +
+                                                  _vm._s(
+                                                    _vm.results.current_page - 1
+                                                  ) +
+                                                  "\n                                        "
+                                              )
+                                            ]
+                                          )
+                                        ])
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    _vm.results.current_page > 1 &&
+                                    _vm.results.current_page <
+                                      _vm.results.last_page
+                                      ? _c("li", { staticClass: "disabled" }, [
+                                          _c("a", [
+                                            _vm._v(
+                                              _vm._s(_vm.results.current_page)
+                                            )
+                                          ])
+                                        ])
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    _vm.results.current_page <
+                                    _vm.results.last_page - 2
+                                      ? _c("li", [
+                                          _c(
+                                            "a",
+                                            {
+                                              attrs: { href: "#" },
+                                              on: {
+                                                click: function($event) {
+                                                  $event.preventDefault()
+                                                  _vm.goToPage(
+                                                    _vm.results.current_page + 1
+                                                  )
+                                                }
+                                              }
+                                            },
+                                            [
+                                              _vm._v(
+                                                "\n                                          " +
+                                                  _vm._s(
+                                                    _vm.results.current_page + 1
+                                                  ) +
+                                                  "\n                                        "
+                                              )
+                                            ]
+                                          )
+                                        ])
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    _vm.results.current_page <
+                                    _vm.results.last_page
+                                      ? _c("li", { staticClass: "disabled" }, [
+                                          _c("a", { attrs: { disabled: "" } }, [
+                                            _vm._v("...")
+                                          ])
+                                        ])
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    _c(
+                                      "li",
+                                      {
+                                        class: {
+                                          disabled:
+                                            _vm.results.current_page ==
+                                            _vm.results.last_page
+                                        }
+                                      },
+                                      [
+                                        _c(
+                                          "a",
+                                          {
+                                            attrs: { href: "#" },
+                                            on: {
+                                              click: function($event) {
+                                                $event.preventDefault()
+                                                _vm.goToPage(
+                                                  _vm.results.last_page
+                                                )
+                                              }
+                                            }
+                                          },
+                                          [
+                                            _vm._v(
+                                              "\n                                          " +
+                                                _vm._s(_vm.results.last_page) +
+                                                "\n                                        "
+                                            )
+                                          ]
+                                        )
+                                      ]
+                                    ),
+                                    _vm._v(" "),
+                                    _vm.results.current_page <
+                                    _vm.results.last_page
+                                      ? _c("li", [
+                                          _c(
+                                            "a",
+                                            {
+                                              attrs: {
+                                                href: "#",
+                                                "aria-label": "Next"
+                                              },
+                                              on: {
+                                                click: function($event) {
+                                                  $event.preventDefault()
+                                                  _vm.goToPage(
+                                                    _vm.results.current_page + 1
+                                                  )
+                                                }
+                                              }
+                                            },
+                                            [
+                                              _c(
+                                                "span",
+                                                {
+                                                  attrs: {
+                                                    "aria-hidden": "true"
+                                                  }
+                                                },
+                                                [_vm._v("»")]
+                                              )
+                                            ]
+                                          )
+                                        ])
+                                      : _vm._e()
+                                  ]
+                                )
+                              ]
+                            )
+                          ])
+                        ])
                       ])
                     : _c("div", { staticClass: "text-info text-center" }, [
                         _c("h4", [_vm._v("No results...")])
@@ -51448,20 +51743,12 @@ var render = function() {
           ]),
       _vm._v(" "),
       _vm.browseInProgress
-        ? _c("div", { staticClass: "row" }, [_vm._m(1)])
+        ? _c("div", { staticClass: "row" }, [_vm._m(0)])
         : _vm._e()
     ])
   ])
 }
 var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row" }, [
-      _c("div", { staticClass: "col-xs-12" })
-    ])
-  },
   function() {
     var _vm = this
     var _h = _vm.$createElement
