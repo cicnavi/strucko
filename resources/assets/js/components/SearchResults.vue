@@ -109,7 +109,7 @@
                 }
             }
         },
-        props: ['language_id', 'translate_to', 'term'],
+        props: ['language_id', 'translate_to', 'term', 'setMode'],
         methods: {
             setStatus(error, errorMessage = '', userMessage = '') {
                 this.status.error = error;
@@ -131,6 +131,7 @@
 
                 this.setSearchParams();
                 this.setLanguageParams();
+                this.setMode('search');
 
                 if ( ! this.goodToGo) {
                     this.setStatus(

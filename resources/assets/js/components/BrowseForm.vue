@@ -1,7 +1,7 @@
 <template>
     <div class="row">
-        <div class="col-xs-12 align-center">
-            <div class="row">
+        <div class="col-xs-12">
+            <div class="row" v-if="lettersLoaded">
                 <div class="col-xs-12">
                     <button type="button"
                         v-for="currentLetter in letters"
@@ -26,7 +26,6 @@
         data: function () {
             return {
                 name: 'browse-form',
-                letters: [],
                 letter: '',
                 page: 1,
                 status: {
@@ -36,17 +35,6 @@
         },
         props: ['setMode'],
         methods: {
-            getLetters() {
-                let app = this;
-                // TODO use idb caching
-                axios.get('api/v1/languages/' + this.languageParams.language_id + '/letters')
-                    .then(function (response) {
-                        app.letters = response.data;
-                    })
-                    .catch(function (error) {
-                        console.error(error);
-                    });
-            },
             setBrowseParams() {
                 this.$store.commit('setBrowseParams', {
                     letter: this.letter,
@@ -83,10 +71,16 @@
             browseParams() {
                 return this.$store.state.browseParams;
 
+            },
+            lettersLoaded() {
+              return this.$store.state.lettersLoaded;
+            },
+            letters() {
+              return this.$store.state.letters;
             }
         },
         created() {
-            this.getLetters();
+
         },
     }
 </script>

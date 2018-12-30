@@ -9,8 +9,12 @@
                             <div class="form-group">
                                 <label>Language</label>
                                 <select class="form-control" v-model="languageParamsLanguageId" @keyup.enter="go">
-                                    <option value="" disabled>Select language</option>
-                                    <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
+                                  <option value="" disabled>Select language</option>
+                                  <option v-for="language in languages"
+                                    :value="language.id"
+                                    :disabled="language.id == languageParamsTranslateTo">
+                                    {{ language.ref_name }}
+                                  </option>
                                 </select>
                             </div>
                         </div>
@@ -20,7 +24,11 @@
                                 <label>Translate to</label>
                                 <select class="form-control" v-model="languageParamsTranslateTo" @keyup.enter="go">
                                     <option value="" disabled>Select language</option>
-                                    <option v-for="language in languages" :value="language.id">{{ language.ref_name }}</option>
+                                    <option v-for="language in languages"
+                                      :value="language.id"
+                                      :disabled="language.id == languageParamsLanguageId">
+                                      {{ language.ref_name }}
+                                    </option>
                                 </select>
                             </div>
                         </div>
@@ -53,11 +61,40 @@
             }
         },
         methods: {
+          resolveRoute() {
+            if (this.mode == 'search') {
+              this.$router.push({
+                  name: 'search',
+                  params: {
+                      language_id: this.languageParams.language_id,
+                      translate_to: this.languageParams.translate_to
+                  },
+                  query: {
+                      term: this.searchParams.term
+                  }
+              });
+            } else if (this.mode == 'browse') {
+              this.$router.push({
+                  name: 'browse',
+                  params: {
+                      language_id: this.languageParams.language_id,
+                      translate_to: this.languageParams.translate_to,
+                      letter: this.browseParams.letter
+                  },
+                  query: {
+                      page: 1
+                  }
+              });
+            }
+          }
         },
         components: {
             LanguagesSelectInput
         },
         computed: {
+            mode() {
+              return this.$store.state.mode;
+            },
             languagesLoaded() {
                 return this.$store.state.languagesLoaded;
             },
@@ -67,6 +104,9 @@
             searchParams() {
                 return this.$store.state.searchParams;
             },
+            browseParams() {
+                return this.$store.state.browseParams;
+            },
             languageParams() {
                 return this.$store.state.languageParams;
             },
@@ -75,7 +115,14 @@
                     return this.languageParams.language_id;
                 },
                 set(value) {
-                    this.$store.commit('setLanguageParamsLanguageId', value);
+                  if ( ! value || this.languageParamsTranslateTo == value) {
+                    return;
+                  }
+
+                  this.$store.commit('setLanguageParamsLanguageId', value);
+                  this.$store.commit('setLettersLoaded', {lettersLoaded: false});
+                  this.$store.dispatch('getLettersFromApi');
+                  this.resolveRoute();
                 }
             },
             languageParamsTranslateTo: {
@@ -83,7 +130,11 @@
                     return this.languageParams.translate_to;
                 },
                 set(value) {
-                    this.$store.commit('setLanguageParamsTranslateTo', value);
+                  if ( ! value || this.languageParamsLanguageId == value) {
+                    return;
+                  }
+                  this.$store.commit('setLanguageParamsTranslateTo', value);
+                  this.resolveRoute();
                 }
             }
         }

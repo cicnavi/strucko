@@ -9,7 +9,7 @@
             </div>
 
             <div class="row">
-                <div class="col-xs-12 text-center">
+                <div class="col-xs-12">
                     <browse-form :setMode="setMode"></browse-form>
                 </div>
             </div>
@@ -27,7 +27,7 @@
                     <div class="loader"></div>
                 </div>
                 <div class="col-xs-12" v-else>
-                    <router-view></router-view>
+                    <router-view :setMode="setMode"></router-view>
                 </div>
             </div>
 

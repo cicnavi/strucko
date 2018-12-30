@@ -25,7 +25,7 @@ const app = new Vue({
     store,
     router,
     data: {
-        appName: 'Strucko app'
+        appName: 'Strucko'
     },
     components: {
         Home
@@ -34,6 +34,14 @@ const app = new Vue({
 
     },
     created: function () {
-        store.dispatch('setLanguages');
+        store.dispatch('setLanguages')
+          .then(function(response){
+            store.dispatch('getLettersFromApi')
+              .then(function(response){console.log('Letters loaded.')})
+              .catch(function(error){console.error('Letters could not be loaded.')});
+          })
+          .catch(function(error){
+            console.error('Languages could not be set.');
+          });
     }
 });

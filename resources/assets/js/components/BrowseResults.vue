@@ -54,7 +54,7 @@
                                           <li :class="{disabled: results.current_page == 1}">
                                             <a href="#" @click.prevent="goToPage(1)">1</a>
                                           </li>
-                                          <li class="disabled" v-if="results.current_page > 1">
+                                          <li class="disabled" v-if="results.current_page > 3">
                                             <a disabled>...</a>
                                           </li>
                                           <li v-if="results.current_page > 2">
@@ -62,18 +62,20 @@
                                               {{ results.current_page - 1 }}
                                             </a>
                                           </li>
-                                          <li class="disabled" v-if="results.current_page > 1 && results.current_page < results.last_page">
+                                          <li class="disabled"
+                                            v-if="results.current_page > 1 && results.current_page < results.last_page">
                                             <a >{{ results.current_page }}</a>
                                           </li>
-                                          <li v-if="results.current_page < (results.last_page - 2)">
+                                          <li v-if="results.current_page < (results.last_page - 1)">
                                             <a href="#" @click.prevent="goToPage(results.current_page + 1)">
                                               {{ results.current_page + 1 }}
                                             </a>
                                           </li>
-                                          <li class="disabled" v-if="results.current_page < results.last_page">
+                                          <li class="disabled" v-if="results.current_page < (results.last_page - 2)">
                                             <a disabled>...</a>
                                           </li>
-                                          <li :class="{disabled: results.current_page == results.last_page}">
+                                          <li :class="{disabled: results.current_page == results.last_page}"
+                                            v-if="results.last_page > 1">
                                             <a href="#" @click.prevent="goToPage(results.last_page)">
                                               {{ results.last_page }}
                                             </a>
@@ -126,12 +128,12 @@
                 },
                 browseInProgress: false,
                 results: {
-                    toral: 0
+                    total: 0
                 },
                 currentPage: this.page
             }
         },
-        props: ['language_id', 'translate_to', 'letter', 'page'],
+        props: ['language_id', 'translate_to', 'letter', 'page', 'setMode'],
         methods: {
             setStatus(error, errorMessage = '', userMessage = '') {
                 this.status.error = error;
@@ -166,9 +168,10 @@
               });
             },
             browse() {
-
+                this.currentPage = this.page;
                 this.setBrowseParams();
                 this.setLanguageParams();
+                this.setMode('browse');
 
                 if ( ! this.goodToGo) {
                     this.setStatus(

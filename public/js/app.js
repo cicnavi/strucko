@@ -29798,7 +29798,7 @@ module.exports = Component.exports
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(19);
-module.exports = __webpack_require__(102);
+module.exports = __webpack_require__(107);
 
 
 /***/ }),
@@ -29837,14 +29837,22 @@ var app = new Vue({
     store: __WEBPACK_IMPORTED_MODULE_0__store_store__["a" /* store */],
     router: __WEBPACK_IMPORTED_MODULE_1__router_router__["a" /* router */],
     data: {
-        appName: 'Strucko app'
+        appName: 'Strucko'
     },
     components: {
         Home: __WEBPACK_IMPORTED_MODULE_2__components_Home___default.a
     },
     methods: {},
     created: function created() {
-        __WEBPACK_IMPORTED_MODULE_0__store_store__["a" /* store */].dispatch('setLanguages');
+        __WEBPACK_IMPORTED_MODULE_0__store_store__["a" /* store */].dispatch('setLanguages').then(function (response) {
+            __WEBPACK_IMPORTED_MODULE_0__store_store__["a" /* store */].dispatch('getLettersFromApi').then(function (response) {
+                console.log('Letters loaded.');
+            }).catch(function (error) {
+                console.error('Letters could not be loaded.');
+            });
+        }).catch(function (error) {
+            console.error('Languages could not be set.');
+        });
     }
 });
 
@@ -43904,6 +43912,8 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
     state: {
         languages: [],
         languagesLoaded: false,
+        letters: [],
+        lettersLoaded: false,
         scientific_field_id: 19,
         languageParams: {
             language_id: 'eng',
@@ -43916,7 +43926,13 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
             letter: '',
             page: 1
         },
-        mode: 'search'
+        /*
+        start - default, start page
+        browse - browsing by using letters
+        search - searching by using search input field
+        term - display for single term
+        */
+        mode: 'start'
     },
     getters: {
         searchIsGoodToGo: function searchIsGoodToGo(state) {
@@ -43937,6 +43953,12 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
         setLanguages: function setLanguages(state, payload) {
             state.languages = payload.languages;
             state.languagesLoaded = true;
+        },
+        setLetters: function setLetters(state, payload) {
+            state.letters = payload.letters;
+        },
+        setLettersLoaded: function setLettersLoaded(state, payload) {
+            state.lettersLoaded = payload.lettersLoaded;
         },
         setSearchParams: function setSearchParams(state, payload) {
             state.searchParams.term = payload.term;
@@ -43965,122 +43987,165 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
     actions: {
         setLanguages: function setLanguages(context) {
             // First we will try to get languages from IDB.
-            if (__WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */]) {
+            return new Promise(function (resolve, reject) {
+                if (__WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */]) {
 
-                var openDBRequest = __WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */].open();
+                    var openDBRequest = __WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */].open();
 
-                openDBRequest.onsuccess = function (openDatabaseEvent) {
-                    // Save DB instance.
-                    var db = openDatabaseEvent.target.result;
-                    // Save object store for timestamps.
-                    var timestampsObjectStore = db.transaction('timestamps', 'readonly').objectStore('timestamps');
-                    // Save current timestamp so we can compare it to the one from the store.
-                    var currentTimestamp = new Date();
-                    // Get the timestamp for the languages (when the languages were lastly updated).
-                    var languagesTimestampRequest = timestampsObjectStore.get('languages');
+                    openDBRequest.onsuccess = function (openDatabaseEvent) {
+                        // Save DB instance.
+                        var db = openDatabaseEvent.target.result;
+                        // Save object store for timestamps.
+                        var timestampsObjectStore = db.transaction('timestamps', 'readonly').objectStore('timestamps');
+                        // Save current timestamp so we can compare it to the one from the store.
+                        var currentTimestamp = new Date();
+                        // Get the timestamp for the languages (when the languages were lastly updated).
+                        var languagesTimestampRequest = timestampsObjectStore.get('languages');
 
-                    languagesTimestampRequest.onerror = function () {
-                        context.dispatch('getLanguagesFromApi');
+                        languagesTimestampRequest.onerror = function () {
+                            context.dispatch('getLanguagesFromApi').then(function (response) {
+                                resolve(response);
+                            }).catch(function (error) {
+                                reject(error);
+                            });
+                        };
+
+                        languagesTimestampRequest.onsuccess = function (event) {
+                            // Store the actual value and make new Date instance from it.
+                            var languagesTimestamp = null;
+                            if (event.target.result) {
+                                languagesTimestamp = new Date(event.target.result.value);
+                            }
+                            // We will store languages in IDB on a daily basis. So, if the IDB date is different
+                            // from current date, update languages from the API.
+                            if (!languagesTimestamp || languagesTimestamp.getDate() != currentTimestamp.getDate()) {
+                                context.dispatch('getLanguagesFromApi').then(function (response) {
+                                    resolve(response);
+                                }).catch(function (error) {
+                                    reject(error);
+                                });;
+                            } else {
+                                // Check if there are any languages in the IDB.
+                                var languagesObjectStore = db.transaction('languages', 'readonly').objectStore('languages');
+                                var countRequest = languagesObjectStore.count();
+                                countRequest.onsuccess = function (countEvent) {
+                                    // If there are at least two languages, use them.
+                                    if (countEvent.target.result > 1) {
+                                        console.log('Getting languages from IDB');
+                                        var idbLanguages = [];
+                                        languagesObjectStore.index('ref_name').openCursor().onsuccess = function (openCursorEvent) {
+                                            var cursor = openCursorEvent.target.result;
+                                            if (cursor) {
+                                                idbLanguages.push(cursor.value);
+                                                cursor.continue();
+                                            } else {
+                                                context.commit('setLanguages', { languages: idbLanguages });
+                                                resolve(idbLanguages);
+                                            }
+                                        };
+                                    } else {
+                                        // There is not enough languages in the store.
+                                        context.dispatch('getLanguagesFromApi').then(function (response) {
+                                            resolve(response);
+                                        }).catch(function (error) {
+                                            reject(error);
+                                        });;
+                                    }
+                                };
+                            }
+                        };
                     };
 
-                    languagesTimestampRequest.onsuccess = function (event) {
-                        // Store the actual value and make new Date instance from it.
-                        var languagesTimestamp = null;
-                        if (event.target.result) {
-                            languagesTimestamp = new Date(event.target.result.value);
-                        }
-                        // We will store languages in IDB on a daily basis. So, if the IDB date is different
-                        // from current date, update languages from the API.
-                        if (!languagesTimestamp || languagesTimestamp.getDate() != currentTimestamp.getDate()) {
-                            context.dispatch('getLanguagesFromApi');
-                        } else {
-                            // Check if there are any languages in the IDB.
-                            var languagesObjectStore = db.transaction('languages', 'readonly').objectStore('languages');
-                            var countRequest = languagesObjectStore.count();
-                            countRequest.onsuccess = function (countEvent) {
-                                // If there are at least two languages, use them.
-                                if (countEvent.target.result > 1) {
-                                    console.log('Getting languages from IDB');
-                                    var idbLanguages = [];
-                                    languagesObjectStore.index('ref_name').openCursor().onsuccess = function (openCursorEvent) {
-                                        var cursor = openCursorEvent.target.result;
-                                        if (cursor) {
-                                            idbLanguages.push(cursor.value);
-                                            cursor.continue();
-                                        } else {
-                                            context.commit('setLanguages', { languages: idbLanguages });
-                                        }
-                                    };
-                                } else {
-                                    // There is not enough languages in the store.
-                                    context.dispatch('getLanguagesFromApi');
-                                }
-                            };
-                        }
+                    openDBRequest.onerror = function (openDatabaseEvent) {
+                        context.dispatch('getLanguagesFromApi').then(function (response) {
+                            resolve(response);
+                        }).catch(function (error) {
+                            reject(error);
+                        });;
                     };
-                };
-
-                openDBRequest.onerror = function (openDatabaseEvent) {
-                    context.dispatch('getLanguagesFromApi');
-                };
-            } else {
-                // IDB is not available, so get the languages from API.
-                context.dispatch('getLanguagesFromApi');
-            }
+                } else {
+                    // IDB is not available, so get the languages from API.
+                    context.dispatch('getLanguagesFromApi').then(function (response) {
+                        resolve(response);
+                    }).catch(function (error) {
+                        reject(error);
+                    });;
+                }
+            }); // end new Promise
         },
         getLanguagesFromApi: function getLanguagesFromApi(context) {
 
             console.log('Getting languages from API');
+            return new Promise(function (resolve, reject) {
+                axios.get('api/v1/languages').then(function (response) {
+                    // Save languages to the store.
+                    context.commit('setLanguages', { languages: response.data });
 
-            axios.get('api/v1/languages').then(function (response) {
-                // Save languages to the store.
-                context.commit('setLanguages', { languages: response.data });
+                    // If IDB is available, save the languages to it.
+                    if (__WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */]) {
+                        var openDBRequest = __WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */].open();
 
-                // If IDB is available, save the languages to it.
-                if (__WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */]) {
-                    var openDBRequest = __WEBPACK_IMPORTED_MODULE_2__idb__["a" /* idb */].open();
+                        openDBRequest.onsuccess = function (event) {
+                            console.log('Storing languages in IDB');
+                            var db = event.target.result;
+                            var languagesObjectStore = db.transaction('languages', 'readwrite').objectStore('languages');
+                            // First clear existing data.
+                            languagesObjectStore.clear().onsuccess = function (event) {
+                                // Now add languages from the API to the IDB.
+                                var objectStore = event.target.source;
+                                var _iteratorNormalCompletion = true;
+                                var _didIteratorError = false;
+                                var _iteratorError = undefined;
 
-                    openDBRequest.onsuccess = function (event) {
-                        console.log('Storing languages in IDB');
-                        var db = event.target.result;
-                        var languagesObjectStore = db.transaction('languages', 'readwrite').objectStore('languages');
-                        // First clear existing data.
-                        languagesObjectStore.clear().onsuccess = function (event) {
-                            // Now add languages from the API to the IDB.
-                            var objectStore = event.target.source;
-                            var _iteratorNormalCompletion = true;
-                            var _didIteratorError = false;
-                            var _iteratorError = undefined;
-
-                            try {
-                                for (var _iterator = response.data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                                    var language = _step.value;
-
-                                    objectStore.add(language);
-                                }
-                            } catch (err) {
-                                _didIteratorError = true;
-                                _iteratorError = err;
-                            } finally {
                                 try {
-                                    if (!_iteratorNormalCompletion && _iterator.return) {
-                                        _iterator.return();
+                                    for (var _iterator = response.data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                                        var language = _step.value;
+
+                                        objectStore.add(language);
                                     }
+                                } catch (err) {
+                                    _didIteratorError = true;
+                                    _iteratorError = err;
                                 } finally {
-                                    if (_didIteratorError) {
-                                        throw _iteratorError;
+                                    try {
+                                        if (!_iteratorNormalCompletion && _iterator.return) {
+                                            _iterator.return();
+                                        }
+                                    } finally {
+                                        if (_didIteratorError) {
+                                            throw _iteratorError;
+                                        }
                                     }
                                 }
-                            }
-                        };
+                            };
 
-                        // Update the timestamp so we know when we have updated languages in IDB.
-                        var timestampsObjectStore = db.transaction('timestamps', 'readwrite').objectStore('timestamps');
-                        timestampsObjectStore.put({ id: 'languages', value: new Date().toISOString() });
-                    };
+                            // Update the timestamp so we know when we have updated languages in IDB.
+                            var timestampsObjectStore = db.transaction('timestamps', 'readwrite').objectStore('timestamps');
+                            timestampsObjectStore.put({ id: 'languages', value: new Date().toISOString() });
+                        };
+                    }
+                    resolve(response);
+                }).catch(function (error) {
+                    console.log('Could not retrieve languages from API');
+                    reject(error);
+                });
+            });
+        },
+        getLettersFromApi: function getLettersFromApi(context) {
+            return new Promise(function (resolve, reject) {
+                if (!context.state.languagesLoaded) {
+                    console.error('Error: lanugages are not yet loaded. Default value used.');
                 }
-            }).catch(function (error) {
-                console.log('Could not retrieve languages from API');
+                // TODO consider using idb caching
+                axios.get('api/v1/languages/' + context.state.languageParams.language_id + '/letters').then(function (response) {
+                    context.commit('setLetters', { letters: response.data });
+                    context.commit('setLettersLoaded', { lettersLoaded: true });
+                    resolve(response);
+                }).catch(function (error) {
+                    context.commit('setLetters', { letters: [] });
+                    context.commit('setLettersLoaded', { lettersLoaded: false });
+                    reject(error);
+                });
             });
         }
     }
@@ -45095,17 +45160,17 @@ if (window.indexedDB) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_SearchResults___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__components_SearchResults__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_BrowseForm__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_BrowseForm___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__components_BrowseForm__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_BrowseResults__ = __webpack_require__(112);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_BrowseResults__ = __webpack_require__(77);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_BrowseResults___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6__components_BrowseResults__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_pages_About__ = __webpack_require__(77);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_pages_About__ = __webpack_require__(82);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_pages_About___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__components_pages_About__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_pages_TermsOfUse__ = __webpack_require__(82);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_pages_TermsOfUse__ = __webpack_require__(87);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_pages_TermsOfUse___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__components_pages_TermsOfUse__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__components_pages_Privacy__ = __webpack_require__(87);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__components_pages_Privacy__ = __webpack_require__(92);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__components_pages_Privacy___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__components_pages_Privacy__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__components_pages_Cookies__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__components_pages_Cookies__ = __webpack_require__(97);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__components_pages_Cookies___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__components_pages_Cookies__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__components_pages_Disclaimer__ = __webpack_require__(97);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__components_pages_Disclaimer__ = __webpack_require__(102);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__components_pages_Disclaimer___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11__components_pages_Disclaimer__);
 
 
@@ -48083,6 +48148,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -48093,11 +48166,41 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             name: 'languages-form'
         };
     },
-    methods: {},
+    methods: {
+        resolveRoute: function resolveRoute() {
+            if (this.mode == 'search') {
+                this.$router.push({
+                    name: 'search',
+                    params: {
+                        language_id: this.languageParams.language_id,
+                        translate_to: this.languageParams.translate_to
+                    },
+                    query: {
+                        term: this.searchParams.term
+                    }
+                });
+            } else if (this.mode == 'browse') {
+                this.$router.push({
+                    name: 'browse',
+                    params: {
+                        language_id: this.languageParams.language_id,
+                        translate_to: this.languageParams.translate_to,
+                        letter: this.browseParams.letter
+                    },
+                    query: {
+                        page: 1
+                    }
+                });
+            }
+        }
+    },
     components: {
         LanguagesSelectInput: __WEBPACK_IMPORTED_MODULE_0__form_elements_LanguagesSelectInput___default.a
     },
     computed: {
+        mode: function mode() {
+            return this.$store.state.mode;
+        },
         languagesLoaded: function languagesLoaded() {
             return this.$store.state.languagesLoaded;
         },
@@ -48106,6 +48209,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         },
         searchParams: function searchParams() {
             return this.$store.state.searchParams;
+        },
+        browseParams: function browseParams() {
+            return this.$store.state.browseParams;
         },
         languageParams: function languageParams() {
             return this.$store.state.languageParams;
@@ -48116,7 +48222,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 return this.languageParams.language_id;
             },
             set: function set(value) {
+                if (!value || this.languageParamsTranslateTo == value) {
+                    return;
+                }
+
                 this.$store.commit('setLanguageParamsLanguageId', value);
+                this.$store.commit('setLettersLoaded', { lettersLoaded: false });
+                this.$store.dispatch('getLettersFromApi');
+                this.resolveRoute();
             }
         },
         languageParamsTranslateTo: {
@@ -48124,7 +48237,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 return this.languageParams.translate_to;
             },
             set: function set(value) {
+                if (!value || this.languageParamsLanguageId == value) {
+                    return;
+                }
                 this.$store.commit('setLanguageParamsTranslateTo', value);
+                this.resolveRoute();
             }
         }
     }
@@ -48421,8 +48538,20 @@ var render = function() {
                         _vm._l(_vm.languages, function(language) {
                           return _c(
                             "option",
-                            { domProps: { value: language.id } },
-                            [_vm._v(_vm._s(language.ref_name))]
+                            {
+                              attrs: {
+                                disabled:
+                                  language.id == _vm.languageParamsTranslateTo
+                              },
+                              domProps: { value: language.id }
+                            },
+                            [
+                              _vm._v(
+                                "\n                                " +
+                                  _vm._s(language.ref_name) +
+                                  "\n                              "
+                              )
+                            ]
                           )
                         })
                       ],
@@ -48487,8 +48616,20 @@ var render = function() {
                         _vm._l(_vm.languages, function(language) {
                           return _c(
                             "option",
-                            { domProps: { value: language.id } },
-                            [_vm._v(_vm._s(language.ref_name))]
+                            {
+                              attrs: {
+                                disabled:
+                                  language.id == _vm.languageParamsLanguageId
+                              },
+                              domProps: { value: language.id }
+                            },
+                            [
+                              _vm._v(
+                                "\n                                  " +
+                                  _vm._s(language.ref_name) +
+                                  "\n                                "
+                              )
+                            ]
                           )
                         })
                       ],
@@ -48823,7 +48964,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
             }
         };
     },
-    props: ['language_id', 'translate_to', 'term'],
+    props: ['language_id', 'translate_to', 'term', 'setMode'],
     methods: {
         setStatus: function setStatus(error) {
             var errorMessage = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
@@ -48848,6 +48989,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
             this.setSearchParams();
             this.setLanguageParams();
+            this.setMode('search');
 
             if (!this.goodToGo) {
                 this.setStatus(true, 'State is not good to go!', 'Please select appropriate option and enter term.');
@@ -49331,7 +49473,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     data: function data() {
         return {
             name: 'browse-form',
-            letters: [],
             letter: '',
             page: 1,
             status: {
@@ -49341,15 +49482,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     },
     props: ['setMode'],
     methods: {
-        getLetters: function getLetters() {
-            var app = this;
-            // TODO use idb caching
-            axios.get('api/v1/languages/' + this.languageParams.language_id + '/letters').then(function (response) {
-                app.letters = response.data;
-            }).catch(function (error) {
-                console.error(error);
-            });
-        },
         setBrowseParams: function setBrowseParams() {
             this.$store.commit('setBrowseParams', {
                 letter: this.letter,
@@ -49381,11 +49513,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         },
         browseParams: function browseParams() {
             return this.$store.state.browseParams;
+        },
+        lettersLoaded: function lettersLoaded() {
+            return this.$store.state.lettersLoaded;
+        },
+        letters: function letters() {
+            return this.$store.state.letters;
         }
     },
-    created: function created() {
-        this.getLetters();
-    }
+    created: function created() {}
 });
 
 /***/ }),
@@ -49397,41 +49533,43 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "row" }, [
-    _c("div", { staticClass: "col-xs-12 align-center" }, [
-      _c("div", { staticClass: "row" }, [
-        _c(
-          "div",
-          { staticClass: "col-xs-12" },
-          _vm._l(_vm.letters, function(currentLetter) {
-            return _c(
-              "button",
-              {
-                staticClass: "btn btn-info btn-sm",
-                class:
-                  _vm.$route.name == "browse" &&
-                  currentLetter.letter == _vm.$route.params.letter
-                    ? "active"
-                    : "",
-                attrs: { type: "button", value: currentLetter.letter },
-                on: {
-                  click: function($event) {
-                    $event.preventDefault()
-                    return _vm.getTermsByLetter($event)
-                  }
-                }
-              },
-              [
-                _vm._v(
-                  "\n                    " +
-                    _vm._s(currentLetter.letter) +
-                    "\n                "
+    _c("div", { staticClass: "col-xs-12" }, [
+      _vm.lettersLoaded
+        ? _c("div", { staticClass: "row" }, [
+            _c(
+              "div",
+              { staticClass: "col-xs-12" },
+              _vm._l(_vm.letters, function(currentLetter) {
+                return _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-info btn-sm",
+                    class:
+                      _vm.$route.name == "browse" &&
+                      currentLetter.letter == _vm.$route.params.letter
+                        ? "active"
+                        : "",
+                    attrs: { type: "button", value: currentLetter.letter },
+                    on: {
+                      click: function($event) {
+                        $event.preventDefault()
+                        return _vm.getTermsByLetter($event)
+                      }
+                    }
+                  },
+                  [
+                    _vm._v(
+                      "\n                    " +
+                        _vm._s(currentLetter.letter) +
+                        "\n                "
+                    )
+                  ]
                 )
-              ]
+              }),
+              0
             )
-          }),
-          0
-        )
-      ])
+          ])
+        : _vm._e()
     ])
   ])
 }
@@ -49462,7 +49600,7 @@ var render = function() {
       _c("div", { staticClass: "row" }, [
         _c(
           "div",
-          { staticClass: "col-xs-12 text-center" },
+          { staticClass: "col-xs-12" },
           [_c("browse-form", { attrs: { setMode: _vm.setMode } })],
           1
         )
@@ -49488,7 +49626,12 @@ var render = function() {
               _vm._v(" "),
               _c("div", { staticClass: "loader" })
             ])
-          : _c("div", { staticClass: "col-xs-12" }, [_c("router-view")], 1)
+          : _c(
+              "div",
+              { staticClass: "col-xs-12" },
+              [_c("router-view", { attrs: { setMode: _vm.setMode } })],
+              1
+            )
       ])
     ])
   ])
@@ -49517,1555 +49660,6 @@ var normalizeComponent = __webpack_require__(3)
 var __vue_script__ = __webpack_require__(80)
 /* template */
 var __vue_template__ = __webpack_require__(81)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = "data-v-ded17fca"
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/pages/About.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-ded17fca", Component.options)
-  } else {
-    hotAPI.reload("data-v-ded17fca", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 78 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(79);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(2)("5648be61", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-ded17fca\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./About.vue", function() {
-     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-ded17fca\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./About.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 79 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(1)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 80 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    name: "about"
-});
-
-/***/ }),
-/* 81 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _vm._m(0)
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", [
-      _c("h2", [_vm._v("About Strucko")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        Strucko is an IT Dictionary web app. It is built using "
-        ),
-        _c("a", { attrs: { href: "http://laravel.com/" } }, [
-          _vm._v("Laravel PHP framework")
-        ]),
-        _vm._v("\n        for backend, "),
-        _c("a", { attrs: { href: "https://www.mysql.com/" } }, [
-          _vm._v("MySQL community edition")
-        ]),
-        _vm._v(" for database storage,\n        "),
-        _c("a", { attrs: { href: "http://getbootstrap.com/" } }, [
-          _vm._v("Twitter Bootstrap")
-        ]),
-        _vm._v(" as HTML and CSS framework,\n        and "),
-        _c("a", { attrs: { href: "http://vuejs.org/" } }, [_vm._v("Vue.js")]),
-        _vm._v(" as JS framework.\n    ")
-      ]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        To get us started we have seeded our database with terms and definitions\n        for several languages from\n        "
-        ),
-        _c(
-          "a",
-          {
-            attrs: {
-              href: "http://www.microsoft.com/Language/en-US/Terminology.aspx"
-            }
-          },
-          [
-            _vm._v(
-              "\n            Microsoft© Language Portal Terminology Collection.\n        "
-            )
-          ]
-        )
-      ]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        The complete strucko.com source code is available on GitHub:\n        "
-        ),
-        _c("a", { attrs: { href: "https://github.com/cicnavi/strucko" } }, [
-          _vm._v("https://github.com/cicnavi/strucko")
-        ])
-      ]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v("\n        Marko Ivančić, email: cicnavi [at] gmail.com\n    ")
-      ])
-    ])
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-ded17fca", module.exports)
-  }
-}
-
-/***/ }),
-/* 82 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(83)
-}
-var normalizeComponent = __webpack_require__(3)
-/* script */
-var __vue_script__ = __webpack_require__(85)
-/* template */
-var __vue_template__ = __webpack_require__(86)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = "data-v-77ab136a"
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/pages/TermsOfUse.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-77ab136a", Component.options)
-  } else {
-    hotAPI.reload("data-v-77ab136a", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 83 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(84);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(2)("201697dc", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-77ab136a\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./TermsOfUse.vue", function() {
-     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-77ab136a\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./TermsOfUse.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 84 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(1)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 85 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    name: "tou"
-});
-
-/***/ }),
-/* 86 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c("div", [
-    _c("h2", [_vm._v("Terms Of Use")]),
-    _vm._v(" "),
-    _c(
-      "p",
-      [
-        _vm._v(
-          "\n        Strucko.com provides you with access to several resources (terms, their translations and definitions),\n        and services (suggesting new terms, translations and definitions and voting on existing terms and definitions),\n        collectively the “Strucko Services and Materials”.\n        The Strucko Services and Materials (including any updates, enhancements, new features,\n        and/or the addition of any new Web properties to the Web Site) are subject\n        to the Strucko Terms of Use (“TOU”) and Strucko License (“License”), unless\n        we have provided more specific TOU, in which case those more specific TOU\n        will apply to the relevant item. Strucko reserves the right to update\n        this TOU at any time without notice to you. The most current version of this\n        TOU can always be reviewed at "
-        ),
-        _c("router-link", { attrs: { to: "/tou" } }, [_vm._v("TOU")]),
-        _vm._v(".\n    ")
-      ],
-      1
-    ),
-    _vm._v(" "),
-    _c("p", [
-      _vm._v(
-        "\n        BY USING THE STRUCKO SERVICES AND MATERRIALS, YOU ACCEPT AND COMPLY\n        WITH THESE TOU. IF YOU DO NOT ACCEPT IT, DO NOT USE THE STRUCKO SERVICES AND MATERIALS.\n    "
-      )
-    ]),
-    _vm._v(" "),
-    _vm._m(0),
-    _vm._v(" "),
-    _vm._m(1),
-    _vm._v(" "),
-    _c(
-      "p",
-      [
-        _c("b", [_vm._v("4. PRIVACY POLICY AND COOKIE POLICY")]),
-        _vm._v(" "),
-        _c("br"),
-        _vm._v(
-          "\n        By using Strucko Services and Materials you accept and comply\n        with our "
-        ),
-        _c("router-link", { attrs: { to: "/privacy" } }, [
-          _vm._v("Privacy Policy")
-        ]),
-        _vm._v(" and\n        "),
-        _c("router-link", { attrs: { to: "/cookies" } }, [
-          _vm._v("Cookie Policy")
-        ]),
-        _vm._v(".\n    ")
-      ],
-      1
-    ),
-    _vm._v(" "),
-    _c(
-      "p",
-      [
-        _c("b", [_vm._v("3. SUPPORT SERVICES.")]),
-        _vm._v(" "),
-        _c("br"),
-        _vm._v(
-          "\n        Because the Strucko Services and Materials are “as is,” we may not provide\n        support services for it. See our\n        "
-        ),
-        _c("router-link", { attrs: { to: "/disclaimer" } }, [
-          _vm._v("Cookie Policy")
-        ]),
-        _vm._v(" for more information.\n    ")
-      ],
-      1
-    )
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("p", [
-      _c("b", [_vm._v("1. LICENSE.")]),
-      _vm._v(" "),
-      _c("br"),
-      _vm._v(" "),
-      _c(
-        "a",
-        {
-          attrs: {
-            rel: "license",
-            href: "http://creativecommons.org/licenses/by-nc-sa/4.0/"
-          }
-        },
-        [
-          _c("img", {
-            staticStyle: { "border-width": "0" },
-            attrs: {
-              alt: "Creative Commons License",
-              src: "https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png"
-            }
-          })
-        ]
-      ),
-      _vm._v(" "),
-      _c("br"),
-      _vm._v(" "),
-      _c(
-        "span",
-        {
-          attrs: {
-            "xmlns:dct": "http://purl.org/dc/terms/",
-            property: "dct:title"
-          }
-        },
-        [_vm._v("\n        Services and Materials\n    ")]
-      ),
-      _vm._v(" by\n        "),
-      _c(
-        "a",
-        {
-          attrs: {
-            "xmlns:cc": "http://creativecommons.org/ns#",
-            href: "http://strucko.com",
-            property: "cc:attributionName",
-            rel: "cc:attributionURL"
-          }
-        },
-        [_vm._v("\n            Strucko\n        ")]
-      ),
-      _vm._v(" are licensed under a\n        "),
-      _c(
-        "a",
-        {
-          attrs: {
-            rel: "license",
-            href: "http://creativecommons.org/licenses/by-nc-sa/4.0/"
-          }
-        },
-        [
-          _vm._v(
-            "\n            Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License"
-          )
-        ]
-      ),
-      _vm._v(".\n        "),
-      _c("br"),
-      _vm._v(
-        "\n        You can use Strucko Services and Materials in accordance to the above license.\n        All materials from external sources are to be used in accordance to their\n        own license.\n        When using Strucko Services and Materials, you are obliged to respect and protect\n        Strucko licence and all licences from external sources,\n        and hold harmless Strucko from any claims,\n        including attorneys’ fees, related to the distribution or use of Strucko\n        Services and Materials.\n        "
-      ),
-      _c("br"),
-      _vm._v("\n        You may not:\n        "),
-      _c("br"),
-      _vm._v(
-        "\n        alter any copyright or trademark in the Strucko Materials;\n        use Strucko trademarks in your programs or documents’ names or in a way\n        that suggests your programs or documents come from or are endorsed by Strucko; or\n        include Strucko Services and Materials in malicious, deceptive or unlawful\n        programs or documents.\n    "
-      )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("p", [
-      _c("b", [_vm._v("2. SCOPE OF LICENSE.")]),
-      _vm._v(" "),
-      _c("br"),
-      _vm._v(
-        "\n        The Strucko Services and Materials are licensed, not sold.\n        This agreement only gives you some rights to use the Strucko Services and Materials.\n        Strucko reserves all other rights. Unless applicable law gives you more rights\n        despite this limitation, you may use the Strucko Services and Materials only as expressly\n        permitted in this agreement. You may not (i) publish the Strucko Services and Materials\n        for others to copy; or (ii) sell, rent, lease or lend the Strucko Services and Materials in whole.\n    "
-      )
-    ])
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-77ab136a", module.exports)
-  }
-}
-
-/***/ }),
-/* 87 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(88)
-}
-var normalizeComponent = __webpack_require__(3)
-/* script */
-var __vue_script__ = __webpack_require__(90)
-/* template */
-var __vue_template__ = __webpack_require__(91)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = "data-v-21708516"
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/pages/Privacy.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-21708516", Component.options)
-  } else {
-    hotAPI.reload("data-v-21708516", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 88 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(89);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(2)("fb636a80", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-21708516\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Privacy.vue", function() {
-     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-21708516\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Privacy.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 89 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(1)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 90 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    name: "privacy"
-});
-
-/***/ }),
-/* 91 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _vm._m(0)
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", [
-      _c("h2", [_vm._v("Privacy Policy")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        Here is information on what types of personal information we receive and\n        collect when you use and visit "
-        ),
-        _c("a", { attrs: { href: "https://strucko.com/" } }, [
-          _vm._v("strucko.com")
-        ]),
-        _vm._v(",\n        and how we safeguard your information.\n    ")
-      ]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        We collect anonymous statistics about your visit, like which of our pages you viewed.\n        Some 3rd parties like Facebook, Twitter and Google may know you visited this website,\n        if you use their services. We can not control them but we do not believe this\n        knowledge poses any threat to you. We use Google AdSense platform to serve\n        ads on our site, and this will make your web browser automatically send certain\n        information to Google (for example, the web address of the page that you are\n        visiting and your IP address). These are just the key points. If you need more detail,\n        keep reading.\n    "
-        )
-      ]),
-      _vm._v(" "),
-      _c("h3", [_vm._v("Measuring our visitors")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v("\n        We measure visitors to our website using\n        "),
-        _c(
-          "a",
-          {
-            attrs: {
-              href: "http://www.google.com/analytics/learn/privacy.html"
-            }
-          },
-          [_vm._v("Google Analytics")]
-        ),
-        _vm._v(
-          ".\n        This records what pages you view within our site, how you arrived at our site and\n        some basic information about your computer. All of that information is anonymous –\n        so we do not know who you are; just that somebody visited our site.\n        The information we collect from analytics helps us understand what parts of our\n        sites are doing well, how people arrive at our site and so on. Like most websites,\n        we use this information to make our website better, but you can\n        "
-        ),
-        _c(
-          "a",
-          { attrs: { href: "https://tools.google.com/dlpage/gaoptout" } },
-          [_vm._v("opt out")]
-        ),
-        _vm._v(" if you wish.\n    ")
-      ]),
-      _vm._v(" "),
-      _c("h3", [_vm._v("Serving Ads")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v("\n        We use the "),
-        _c("a", { attrs: { href: "https://www.google.com/adsense/" } }, [
-          _vm._v("Google AdSense")
-        ]),
-        _vm._v(
-          " platform to\n        serve ads on our site.\n        For more information on how Google collects and uses your data, see this page:\n        "
-        ),
-        _c(
-          "a",
-          {
-            attrs: {
-              href: "http://www.google.com/intl/en/policies/privacy/partners/"
-            }
-          },
-          [_vm._v("http://www.google.com/intl/en/policies/privacy/partners/")]
-        )
-      ]),
-      _vm._v(" "),
-      _c("h3", [_vm._v("Our cookies")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        We do use cookies to store information, such as your personal preferences when you\n        visit our site. This could include only showing you a popup once in your visit,\n        or the ability to login to some of our features, such as voting on terms and definitions.\n        You can choose to disable or selectively turn off our cookies or third-party cookies\n        in your browser settings. However, this can affect how you are able to interact\n        with our site as well as other websites. This could include the inability to login\n        to services, programs, or accounts.\n    "
-        )
-      ]),
-      _vm._v(" "),
-      _c("h3", [_vm._v("If you sign up")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        If you sign up to strucko.com, we will record specific personal information about you,\n        such as your name and email address. Your password is securely hashed (not stored in clear text).\n        We will record your suggested terms, definitions, translations and all your votes\n        on terms and definitions.\n    "
-        )
-      ]),
-      _vm._v(" "),
-      _c("h3", [_vm._v("Emails")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        We may send you email notifications regarding your account (such as email confirmation or password reset).\n        We may send you email which you have specifically requested (such as newsletters or notifications\n        when a report is completed). You have the ability to opt out of any of this communication at any time.\n        We will never provide your personal information or email address to any third parties except\n        where they are specifically employed to help deliver our own services, as detailed above.\n    "
-        )
-      ]),
-      _vm._v(" "),
-      _c("h3", [_vm._v("Security")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        We take many precautions to prevent the loss, misuse or alteration of your personal information.\n        These precautions include:\n    "
-        )
-      ]),
-      _vm._v(" "),
-      _c("ul", [
-        _c("li", [
-          _vm._v("Hardware stored in secured datacentres behind firewalls")
-        ]),
-        _vm._v(" "),
-        _c("li", [
-          _vm._v(
-            "All access to information restricted by password and/or secure key"
-          )
-        ]),
-        _vm._v(" "),
-        _c("li", [
-          _vm._v(
-            "Restrictions to what information can be accessed via any location"
-          )
-        ])
-      ]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        Whilst we take great care to ensure any confidential information remains protected,\n        we cannot guarantee the security of data sent over the Internet.\n        Of course you are responsible for keeping your password and user details confidential.\n        Nobody at strucko.com will ever ask you for your password, so please do not trust anybody asking it.\n    "
-        )
-      ]),
-      _vm._v(" "),
-      _c("h3", [_vm._v("Updates to this policy")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        We may update this privacy policy from time-to-time, particularly as technology changes.\n        You can always check this page for the latest version. We may also notify you of changes\n        to our privacy policy by email.\n    "
-        )
-      ]),
-      _vm._v(" "),
-      _c("h2", [_vm._v("Any questions?")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        If you have any questions about this privacy policy or your personal data, please write to us by email.\n    "
-        )
-      ]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v("\n        Marko Ivančić, cicnavi [at] gmail.com\n    ")
-      ]),
-      _vm._v(" "),
-      _c("p", [_vm._v("Last edited on 23 May, 2018 17:58 CET")])
-    ])
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-21708516", module.exports)
-  }
-}
-
-/***/ }),
-/* 92 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(93)
-}
-var normalizeComponent = __webpack_require__(3)
-/* script */
-var __vue_script__ = __webpack_require__(95)
-/* template */
-var __vue_template__ = __webpack_require__(96)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = "data-v-622bc89d"
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/pages/Cookies.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-622bc89d", Component.options)
-  } else {
-    hotAPI.reload("data-v-622bc89d", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 93 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(94);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(2)("2cd13b12", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-622bc89d\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Cookies.vue", function() {
-     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-622bc89d\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Cookies.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 94 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(1)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 95 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    name: "cookies"
-});
-
-/***/ }),
-/* 96 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c("div", [
-    _c("h2", [_vm._v("Cookie Policy")]),
-    _vm._v(" "),
-    _vm._m(0),
-    _vm._v(" "),
-    _c("h3", [_vm._v("About this Cookie policy")]),
-    _vm._v(" "),
-    _c(
-      "p",
-      [
-        _vm._v(
-          '\n        This Cookie Policy applies to https://strucko.com ("the Website"). In this Cookie Policy,\n        we refer to the Website regardless of how you access the network.\n        By accessing the Website, you agree that this Cookie Policy will apply\n        whenever you access the Website on any device.\n        This Cookie Policy forms part of and is incorporated into our Website Terms Of Use\n        '
-        ),
-        _c(
-          "router-link",
-          { staticClass: "btn btn-sm", attrs: { to: "/tou" } },
-          [_vm._v("TOU")]
-        ),
-        _vm._v(
-          ".\n        Any changes to this policy will be posted here. We reserve the right to\n        vary this Cookie Policy from time to time and such changes shall become\n        effective as soon as they are posted. Your continued use of the Website\n        constitutes your agreement to all such changes.\n    "
-        )
-      ],
-      1
-    ),
-    _vm._v(" "),
-    _c("h3", [_vm._v("Our use of cookies")]),
-    _vm._v(" "),
-    _vm._m(1),
-    _vm._v(" "),
-    _c("h3", [
-      _vm._v(
-        "Types of cookie that may be used during your visit to the Website"
-      )
-    ]),
-    _vm._v(" "),
-    _vm._m(2)
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("p", [
-      _vm._v(
-        "\n        Like most websites, strucko.com uses cookies.\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Cookies are small text files stored on your computer by your browser.\n        They are used for many things, such as remembering whether you have visited\n        the site before, so that you remain logged in - or to help us work out\n        how many new website visitors we get each month. They contain information\n        about the use of your computer but do not include personal information\n        about you (they do not store your name, for instance).\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        This policy explains how cookies are used on Strucko.com website in general\n        - and, below, how you can control the cookies that may be used on this\n        site (not all of them are used on every site).\n    "
-      )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("p", [
-      _vm._v(
-        "\n        We may collect information automatically when you visit the Website, using cookies.\n        The cookies allow us to identify your computer and find out details about your last visit.\n        You can choose, below, not to allow cookies. If you do, we can not guarantee\n        that your experience with the Website will be as good as if you do allow cookies.\n        The information collected by cookies does not personally identify you;\n        it includes general information about your computer settings, your\n        connection to the Internet e.g. operating system and platform,\n        IP address, your browsing patterns and timings of browsing on the\n        Website and your location.\n        Most internet browsers accept cookies automatically, but you can change\n        the settings of your browser to erase cookies or prevent automatic\n        acceptance if you prefer. These links explain how you can control\n        cookies via your browser - remember that if you turn off cookies\n        in your browser then these settings apply to all websites not just this one:\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Internet Explorer http://support.microsoft.com/kb/278835\n        (this page links to further information for different versions of IE -\n        the mobile version is at http:/ /www.microsoft.com/windowsphone/en-us/howto/wp7/web/changing-privacy-and-other-browser-settings.aspx).\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Chrome: http://support.google.com/chrome/bin/answer.py?hl=en-GB&answer=95647\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Safari: http://docs.info.apple.com/article.html?path=Safari/5.0/en/9277.html (or http://support.apple.com/kb/HT1677for mobile versions)\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Firefox: http://support.mozilla.org/en-US/kb/ Enabling%20and%20disabling%20cookies\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Blackberries: http://docs.blackberry.com/en/smartphone_users/deliverables/ 32004/Turn_off_cookies_in_the_browser_60_1072866_11.jsp\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Android: http://support.google.com/mobile/bin/answer.py?hl=en&answer=169022\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Opera: http://www.opera.com/browser/tutorials/security/privacy/\n    "
-      )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("p", [
-      _vm._v(
-        "\n        The following types of cookie are used on this site.\n        We do not list every single cookie used by name - but for each type of\n        cookie we tell you how you can control its use.\n        "
-      ),
-      _c("br"),
-      _c("br"),
-      _vm._v("\n        1. Analytics cookies\n        "),
-      _c("br"),
-      _vm._v(
-        "\n        These monitor how visitors move around the Website and how they reached\n        it. This is used so that we can see total (not individual) figures\n        on which types of content users enjoy most, for instance.\n        You can opt out of these if you want:\n        Google: https://tools.google.com/dlpage/gaoptout\n        Optimizely: https://www.optimizely.com/opt_out/\n        "
-      ),
-      _c("br"),
-      _c("br"),
-      _vm._v("\n        2. Third-party service cookies\n        "),
-      _c("br"),
-      _vm._v(
-        "\n        Social sharing, video and other services we offer are run by other\n        companies. These companies may drop cookies on your computer when you\n        use them on our site or if you are already logged in to them.\n        Here is a list of places where you can find out more about specific\n        services that we may use and their use of cookies:\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Facebooks data use policy: http://www.facebook.com/about/privacy/your-info-on-other\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        AddThis (the service that runs some of our social sharing buttons): http://www.addthis.com/privacy#.T6j--usS0bw\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Twitters privacy policy: https://twitter.com/privacy\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        YouTube video player cookie policy: http://www.google.com/intl/en/policies/privacy/faq/#toc-cookies(Googles standard terms).\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Disqus cookie policy: https://help.disqus.com/customer/portal/articles/466235-use-of-cookies\n        "
-      ),
-      _c("br"),
-      _c("br"),
-      _vm._v(
-        "\n        3. Our own ad serving and management cookies\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        We sell space on our website to advertisers - they pay for the content\n        you enjoy for free.\n        These cookies hold information about the computer - they do not hold\n        personal information about you (ie it is not linked to you as an individual).\n        These are the services we use and how you can control those cookies.\n        Please note that turning off advertising cookies will not mean that you\n        are not served any advertising merely that it will not be tailored to your interests.\n        "
-      ),
-      _c("br"),
-      _vm._v(
-        "\n        Google Adsense (ad partner): Privacy policy at https://support.google.com/adsense/bin/answer.py?hl=en-GB&utm_medium=link&gsessionid=DyXLmLB1J1MxXckh6tX6AQ&utm_campaign=ww-ww-et-asfe_&utm_source=aso&answer=48182 and opt-out via https://www.google.com/settings/ads/onweb/.\n        "
-      ),
-      _c("br"),
-      _c("br"),
-      _vm._v("\n        4. Other ad management cookies\n        "),
-      _c("br"),
-      _vm._v(
-        "\n        Advertisements on the Website are provided by other organisations.\n        Our advertising partners will serve advertisements that they believe\n        are most likely to be of interest to you, based on information about\n        your visit to the Website. In order to do this,\n        our advertising partner may need to place a cookie on your computer.\n        These cookies hold information about the computer - they do not hold\n        personal information about you (ie it is not linked to you as an individual).\n        For more information about this type of online behavioural advertising,\n        about cookies, and about how to turn this feature off,\n        please visit http://www.youronlinechoices.com/uk/\n        "
-      ),
-      _c("br"),
-      _c("br"),
-      _vm._v("\n        5. Site management cookies\n        "),
-      _c("br"),
-      _vm._v(
-        "\n        These are used to maintain your identity or session on the Website.\n        For instance, where our websites run on more than one server, we\n        use a cookie to ensure that you are sent information by one specific\n        server (otherwise you may log in or out unexpectedly). We may use similar\n        cookies when you vote in opinion polls to ensure that you can only vote\n        once, and to ensure that you can use our commenting functionality when not\n        logged in (to ensure you do not see comments you have reported as abusive, for\n        instance, or do not vote comments up/down more than once).\n        These cookies cannot be turned off individually but you could change\n        your browser setting to refuse all cookies (see above) if you do not\n        wish to accept them.\n    "
-      )
-    ])
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-622bc89d", module.exports)
-  }
-}
-
-/***/ }),
-/* 97 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(98)
-}
-var normalizeComponent = __webpack_require__(3)
-/* script */
-var __vue_script__ = __webpack_require__(100)
-/* template */
-var __vue_template__ = __webpack_require__(101)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = "data-v-6bf6c3fd"
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/pages/Disclaimer.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-6bf6c3fd", Component.options)
-  } else {
-    hotAPI.reload("data-v-6bf6c3fd", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 98 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(99);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(2)("9b5c435c", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6bf6c3fd\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Disclaimer.vue", function() {
-     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6bf6c3fd\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Disclaimer.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 99 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(1)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 100 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    name: "disclaimer"
-});
-
-/***/ }),
-/* 101 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _vm._m(0)
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", [
-      _c("h2", [_vm._v("Disclaimer")]),
-      _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "\n        While we at strucko.com strive to make the information on this website as\n        timely and accurate as possible, we make no claims, promises, or guarantees\n        about the accuracy, completeness, or adequacy of the contents of this site,\n        and expressly disclaim liability for errors and omissions in the contents of this site.\n        "
-        ),
-        _c("br"),
-        _vm._v(
-          "\n        Strucko services and materials are licensed “as-is.” You bear the risk of using it.\n        Strucko gives no express warranties, guarantees or conditions. You may have\n        additional consumer rights under your local laws which this agreement cannot\n        change. To the extent permitted under your local laws, strucko excludes the\n        implied warranties of merchantability, fitness for a particular purpose and\n        non-infringement. You cannot recover any damages, including consequential,\n        lost profits, special, direct, indirect or incidental damages.\n        "
-        ),
-        _c("br"),
-        _vm._v(
-          "\n        This limitation applies to anything related to the Strucko Services and\n        Materials (including code), and services and content on third party Internet sites,\n        or third party programs\n        or documents; and claims for breach of contract, breach of warranty,\n        guarantee or condition, strict liability, negligence, or other tort\n        to the extent permitted by applicable law. It also applies even if Strucko\n        knew or should have known about the possibility of the damages. The above\n        limitation or exclusion may not apply to you because your country may not\n        allow the exclusion or limitation of incidental, consequential or other damages.\n    "
-        )
-      ])
-    ])
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-6bf6c3fd", module.exports)
-  }
-}
-
-/***/ }),
-/* 102 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 103 */,
-/* 104 */,
-/* 105 */,
-/* 106 */,
-/* 107 */,
-/* 108 */,
-/* 109 */,
-/* 110 */,
-/* 111 */,
-/* 112 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(113)
-}
-var normalizeComponent = __webpack_require__(3)
-/* script */
-var __vue_script__ = __webpack_require__(115)
-/* template */
-var __vue_template__ = __webpack_require__(116)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -51104,13 +49698,13 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 113 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(114);
+var content = __webpack_require__(79);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -51130,7 +49724,7 @@ if(false) {
 }
 
 /***/ }),
-/* 114 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(false);
@@ -51144,13 +49738,15 @@ exports.push([module.i, "\n.loader[data-v-74f2ef65] {\n    margin: 0 auto;\n    
 
 
 /***/ }),
-/* 115 */
+/* 80 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+//
+//
 //
 //
 //
@@ -51279,12 +49875,12 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
             },
             browseInProgress: false,
             results: {
-                toral: 0
+                total: 0
             },
             currentPage: this.page
         };
     },
-    props: ['language_id', 'translate_to', 'letter', 'page'],
+    props: ['language_id', 'translate_to', 'letter', 'page', 'setMode'],
     methods: {
         setStatus: function setStatus(error) {
             var errorMessage = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
@@ -51322,9 +49918,10 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
             });
         },
         browse: function browse() {
-
+            this.currentPage = this.page;
             this.setBrowseParams();
             this.setLanguageParams();
+            this.setMode('browse');
 
             if (!this.goodToGo) {
                 this.setStatus(true, 'State is not good to go!', 'Please check if browseParams are set.');
@@ -51372,7 +49969,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 });
 
 /***/ }),
-/* 116 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -51563,7 +50160,7 @@ var render = function() {
                                       ]
                                     ),
                                     _vm._v(" "),
-                                    _vm.results.current_page > 1
+                                    _vm.results.current_page > 3
                                       ? _c("li", { staticClass: "disabled" }, [
                                           _c("a", { attrs: { disabled: "" } }, [
                                             _vm._v("...")
@@ -51612,7 +50209,7 @@ var render = function() {
                                       : _vm._e(),
                                     _vm._v(" "),
                                     _vm.results.current_page <
-                                    _vm.results.last_page - 2
+                                    _vm.results.last_page - 1
                                       ? _c("li", [
                                           _c(
                                             "a",
@@ -51641,7 +50238,7 @@ var render = function() {
                                       : _vm._e(),
                                     _vm._v(" "),
                                     _vm.results.current_page <
-                                    _vm.results.last_page
+                                    _vm.results.last_page - 2
                                       ? _c("li", { staticClass: "disabled" }, [
                                           _c("a", { attrs: { disabled: "" } }, [
                                             _vm._v("...")
@@ -51649,39 +50246,43 @@ var render = function() {
                                         ])
                                       : _vm._e(),
                                     _vm._v(" "),
-                                    _c(
-                                      "li",
-                                      {
-                                        class: {
-                                          disabled:
-                                            _vm.results.current_page ==
-                                            _vm.results.last_page
-                                        }
-                                      },
-                                      [
-                                        _c(
-                                          "a",
+                                    _vm.results.last_page > 1
+                                      ? _c(
+                                          "li",
                                           {
-                                            attrs: { href: "#" },
-                                            on: {
-                                              click: function($event) {
-                                                $event.preventDefault()
-                                                _vm.goToPage(
-                                                  _vm.results.last_page
-                                                )
-                                              }
+                                            class: {
+                                              disabled:
+                                                _vm.results.current_page ==
+                                                _vm.results.last_page
                                             }
                                           },
                                           [
-                                            _vm._v(
-                                              "\n                                          " +
-                                                _vm._s(_vm.results.last_page) +
-                                                "\n                                        "
+                                            _c(
+                                              "a",
+                                              {
+                                                attrs: { href: "#" },
+                                                on: {
+                                                  click: function($event) {
+                                                    $event.preventDefault()
+                                                    _vm.goToPage(
+                                                      _vm.results.last_page
+                                                    )
+                                                  }
+                                                }
+                                              },
+                                              [
+                                                _vm._v(
+                                                  "\n                                          " +
+                                                    _vm._s(
+                                                      _vm.results.last_page
+                                                    ) +
+                                                    "\n                                        "
+                                                )
+                                              ]
                                             )
                                           ]
                                         )
-                                      ]
-                                    ),
+                                      : _vm._e(),
                                     _vm._v(" "),
                                     _vm.results.current_page <
                                     _vm.results.last_page
@@ -51768,6 +50369,1546 @@ if (false) {
     require("vue-hot-reload-api")      .rerender("data-v-74f2ef65", module.exports)
   }
 }
+
+/***/ }),
+/* 82 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(83)
+}
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(85)
+/* template */
+var __vue_template__ = __webpack_require__(86)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = "data-v-ded17fca"
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/pages/About.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-ded17fca", Component.options)
+  } else {
+    hotAPI.reload("data-v-ded17fca", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 83 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(84);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(2)("5648be61", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-ded17fca\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./About.vue", function() {
+     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-ded17fca\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./About.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 84 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(1)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 85 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    name: "about"
+});
+
+/***/ }),
+/* 86 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _vm._m(0)
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", [
+      _c("h2", [_vm._v("About Strucko")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        Strucko is an IT Dictionary web app. It is built using "
+        ),
+        _c("a", { attrs: { href: "http://laravel.com/" } }, [
+          _vm._v("Laravel PHP framework")
+        ]),
+        _vm._v("\n        for backend, "),
+        _c("a", { attrs: { href: "https://www.mysql.com/" } }, [
+          _vm._v("MySQL community edition")
+        ]),
+        _vm._v(" for database storage,\n        "),
+        _c("a", { attrs: { href: "http://getbootstrap.com/" } }, [
+          _vm._v("Twitter Bootstrap")
+        ]),
+        _vm._v(" as HTML and CSS framework,\n        and "),
+        _c("a", { attrs: { href: "http://vuejs.org/" } }, [_vm._v("Vue.js")]),
+        _vm._v(" as JS framework.\n    ")
+      ]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        To get us started we have seeded our database with terms and definitions\n        for several languages from\n        "
+        ),
+        _c(
+          "a",
+          {
+            attrs: {
+              href: "http://www.microsoft.com/Language/en-US/Terminology.aspx"
+            }
+          },
+          [
+            _vm._v(
+              "\n            Microsoft© Language Portal Terminology Collection.\n        "
+            )
+          ]
+        )
+      ]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        The complete strucko.com source code is available on GitHub:\n        "
+        ),
+        _c("a", { attrs: { href: "https://github.com/cicnavi/strucko" } }, [
+          _vm._v("https://github.com/cicnavi/strucko")
+        ])
+      ]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v("\n        Marko Ivančić, email: cicnavi [at] gmail.com\n    ")
+      ])
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-ded17fca", module.exports)
+  }
+}
+
+/***/ }),
+/* 87 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(88)
+}
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(90)
+/* template */
+var __vue_template__ = __webpack_require__(91)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = "data-v-77ab136a"
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/pages/TermsOfUse.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-77ab136a", Component.options)
+  } else {
+    hotAPI.reload("data-v-77ab136a", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 88 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(89);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(2)("201697dc", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-77ab136a\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./TermsOfUse.vue", function() {
+     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-77ab136a\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./TermsOfUse.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 89 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(1)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 90 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    name: "tou"
+});
+
+/***/ }),
+/* 91 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _c("h2", [_vm._v("Terms Of Use")]),
+    _vm._v(" "),
+    _c(
+      "p",
+      [
+        _vm._v(
+          "\n        Strucko.com provides you with access to several resources (terms, their translations and definitions),\n        and services (suggesting new terms, translations and definitions and voting on existing terms and definitions),\n        collectively the “Strucko Services and Materials”.\n        The Strucko Services and Materials (including any updates, enhancements, new features,\n        and/or the addition of any new Web properties to the Web Site) are subject\n        to the Strucko Terms of Use (“TOU”) and Strucko License (“License”), unless\n        we have provided more specific TOU, in which case those more specific TOU\n        will apply to the relevant item. Strucko reserves the right to update\n        this TOU at any time without notice to you. The most current version of this\n        TOU can always be reviewed at "
+        ),
+        _c("router-link", { attrs: { to: "/tou" } }, [_vm._v("TOU")]),
+        _vm._v(".\n    ")
+      ],
+      1
+    ),
+    _vm._v(" "),
+    _c("p", [
+      _vm._v(
+        "\n        BY USING THE STRUCKO SERVICES AND MATERRIALS, YOU ACCEPT AND COMPLY\n        WITH THESE TOU. IF YOU DO NOT ACCEPT IT, DO NOT USE THE STRUCKO SERVICES AND MATERIALS.\n    "
+      )
+    ]),
+    _vm._v(" "),
+    _vm._m(0),
+    _vm._v(" "),
+    _vm._m(1),
+    _vm._v(" "),
+    _c(
+      "p",
+      [
+        _c("b", [_vm._v("4. PRIVACY POLICY AND COOKIE POLICY")]),
+        _vm._v(" "),
+        _c("br"),
+        _vm._v(
+          "\n        By using Strucko Services and Materials you accept and comply\n        with our "
+        ),
+        _c("router-link", { attrs: { to: "/privacy" } }, [
+          _vm._v("Privacy Policy")
+        ]),
+        _vm._v(" and\n        "),
+        _c("router-link", { attrs: { to: "/cookies" } }, [
+          _vm._v("Cookie Policy")
+        ]),
+        _vm._v(".\n    ")
+      ],
+      1
+    ),
+    _vm._v(" "),
+    _c(
+      "p",
+      [
+        _c("b", [_vm._v("3. SUPPORT SERVICES.")]),
+        _vm._v(" "),
+        _c("br"),
+        _vm._v(
+          "\n        Because the Strucko Services and Materials are “as is,” we may not provide\n        support services for it. See our\n        "
+        ),
+        _c("router-link", { attrs: { to: "/disclaimer" } }, [
+          _vm._v("Cookie Policy")
+        ]),
+        _vm._v(" for more information.\n    ")
+      ],
+      1
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("p", [
+      _c("b", [_vm._v("1. LICENSE.")]),
+      _vm._v(" "),
+      _c("br"),
+      _vm._v(" "),
+      _c(
+        "a",
+        {
+          attrs: {
+            rel: "license",
+            href: "http://creativecommons.org/licenses/by-nc-sa/4.0/"
+          }
+        },
+        [
+          _c("img", {
+            staticStyle: { "border-width": "0" },
+            attrs: {
+              alt: "Creative Commons License",
+              src: "https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png"
+            }
+          })
+        ]
+      ),
+      _vm._v(" "),
+      _c("br"),
+      _vm._v(" "),
+      _c(
+        "span",
+        {
+          attrs: {
+            "xmlns:dct": "http://purl.org/dc/terms/",
+            property: "dct:title"
+          }
+        },
+        [_vm._v("\n        Services and Materials\n    ")]
+      ),
+      _vm._v(" by\n        "),
+      _c(
+        "a",
+        {
+          attrs: {
+            "xmlns:cc": "http://creativecommons.org/ns#",
+            href: "http://strucko.com",
+            property: "cc:attributionName",
+            rel: "cc:attributionURL"
+          }
+        },
+        [_vm._v("\n            Strucko\n        ")]
+      ),
+      _vm._v(" are licensed under a\n        "),
+      _c(
+        "a",
+        {
+          attrs: {
+            rel: "license",
+            href: "http://creativecommons.org/licenses/by-nc-sa/4.0/"
+          }
+        },
+        [
+          _vm._v(
+            "\n            Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License"
+          )
+        ]
+      ),
+      _vm._v(".\n        "),
+      _c("br"),
+      _vm._v(
+        "\n        You can use Strucko Services and Materials in accordance to the above license.\n        All materials from external sources are to be used in accordance to their\n        own license.\n        When using Strucko Services and Materials, you are obliged to respect and protect\n        Strucko licence and all licences from external sources,\n        and hold harmless Strucko from any claims,\n        including attorneys’ fees, related to the distribution or use of Strucko\n        Services and Materials.\n        "
+      ),
+      _c("br"),
+      _vm._v("\n        You may not:\n        "),
+      _c("br"),
+      _vm._v(
+        "\n        alter any copyright or trademark in the Strucko Materials;\n        use Strucko trademarks in your programs or documents’ names or in a way\n        that suggests your programs or documents come from or are endorsed by Strucko; or\n        include Strucko Services and Materials in malicious, deceptive or unlawful\n        programs or documents.\n    "
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("p", [
+      _c("b", [_vm._v("2. SCOPE OF LICENSE.")]),
+      _vm._v(" "),
+      _c("br"),
+      _vm._v(
+        "\n        The Strucko Services and Materials are licensed, not sold.\n        This agreement only gives you some rights to use the Strucko Services and Materials.\n        Strucko reserves all other rights. Unless applicable law gives you more rights\n        despite this limitation, you may use the Strucko Services and Materials only as expressly\n        permitted in this agreement. You may not (i) publish the Strucko Services and Materials\n        for others to copy; or (ii) sell, rent, lease or lend the Strucko Services and Materials in whole.\n    "
+      )
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-77ab136a", module.exports)
+  }
+}
+
+/***/ }),
+/* 92 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(93)
+}
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(95)
+/* template */
+var __vue_template__ = __webpack_require__(96)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = "data-v-21708516"
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/pages/Privacy.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-21708516", Component.options)
+  } else {
+    hotAPI.reload("data-v-21708516", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 93 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(94);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(2)("fb636a80", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-21708516\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Privacy.vue", function() {
+     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-21708516\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Privacy.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 94 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(1)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 95 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    name: "privacy"
+});
+
+/***/ }),
+/* 96 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _vm._m(0)
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", [
+      _c("h2", [_vm._v("Privacy Policy")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        Here is information on what types of personal information we receive and\n        collect when you use and visit "
+        ),
+        _c("a", { attrs: { href: "https://strucko.com/" } }, [
+          _vm._v("strucko.com")
+        ]),
+        _vm._v(",\n        and how we safeguard your information.\n    ")
+      ]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        We collect anonymous statistics about your visit, like which of our pages you viewed.\n        Some 3rd parties like Facebook, Twitter and Google may know you visited this website,\n        if you use their services. We can not control them but we do not believe this\n        knowledge poses any threat to you. We use Google AdSense platform to serve\n        ads on our site, and this will make your web browser automatically send certain\n        information to Google (for example, the web address of the page that you are\n        visiting and your IP address). These are just the key points. If you need more detail,\n        keep reading.\n    "
+        )
+      ]),
+      _vm._v(" "),
+      _c("h3", [_vm._v("Measuring our visitors")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v("\n        We measure visitors to our website using\n        "),
+        _c(
+          "a",
+          {
+            attrs: {
+              href: "http://www.google.com/analytics/learn/privacy.html"
+            }
+          },
+          [_vm._v("Google Analytics")]
+        ),
+        _vm._v(
+          ".\n        This records what pages you view within our site, how you arrived at our site and\n        some basic information about your computer. All of that information is anonymous –\n        so we do not know who you are; just that somebody visited our site.\n        The information we collect from analytics helps us understand what parts of our\n        sites are doing well, how people arrive at our site and so on. Like most websites,\n        we use this information to make our website better, but you can\n        "
+        ),
+        _c(
+          "a",
+          { attrs: { href: "https://tools.google.com/dlpage/gaoptout" } },
+          [_vm._v("opt out")]
+        ),
+        _vm._v(" if you wish.\n    ")
+      ]),
+      _vm._v(" "),
+      _c("h3", [_vm._v("Serving Ads")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v("\n        We use the "),
+        _c("a", { attrs: { href: "https://www.google.com/adsense/" } }, [
+          _vm._v("Google AdSense")
+        ]),
+        _vm._v(
+          " platform to\n        serve ads on our site.\n        For more information on how Google collects and uses your data, see this page:\n        "
+        ),
+        _c(
+          "a",
+          {
+            attrs: {
+              href: "http://www.google.com/intl/en/policies/privacy/partners/"
+            }
+          },
+          [_vm._v("http://www.google.com/intl/en/policies/privacy/partners/")]
+        )
+      ]),
+      _vm._v(" "),
+      _c("h3", [_vm._v("Our cookies")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        We do use cookies to store information, such as your personal preferences when you\n        visit our site. This could include only showing you a popup once in your visit,\n        or the ability to login to some of our features, such as voting on terms and definitions.\n        You can choose to disable or selectively turn off our cookies or third-party cookies\n        in your browser settings. However, this can affect how you are able to interact\n        with our site as well as other websites. This could include the inability to login\n        to services, programs, or accounts.\n    "
+        )
+      ]),
+      _vm._v(" "),
+      _c("h3", [_vm._v("If you sign up")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        If you sign up to strucko.com, we will record specific personal information about you,\n        such as your name and email address. Your password is securely hashed (not stored in clear text).\n        We will record your suggested terms, definitions, translations and all your votes\n        on terms and definitions.\n    "
+        )
+      ]),
+      _vm._v(" "),
+      _c("h3", [_vm._v("Emails")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        We may send you email notifications regarding your account (such as email confirmation or password reset).\n        We may send you email which you have specifically requested (such as newsletters or notifications\n        when a report is completed). You have the ability to opt out of any of this communication at any time.\n        We will never provide your personal information or email address to any third parties except\n        where they are specifically employed to help deliver our own services, as detailed above.\n    "
+        )
+      ]),
+      _vm._v(" "),
+      _c("h3", [_vm._v("Security")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        We take many precautions to prevent the loss, misuse or alteration of your personal information.\n        These precautions include:\n    "
+        )
+      ]),
+      _vm._v(" "),
+      _c("ul", [
+        _c("li", [
+          _vm._v("Hardware stored in secured datacentres behind firewalls")
+        ]),
+        _vm._v(" "),
+        _c("li", [
+          _vm._v(
+            "All access to information restricted by password and/or secure key"
+          )
+        ]),
+        _vm._v(" "),
+        _c("li", [
+          _vm._v(
+            "Restrictions to what information can be accessed via any location"
+          )
+        ])
+      ]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        Whilst we take great care to ensure any confidential information remains protected,\n        we cannot guarantee the security of data sent over the Internet.\n        Of course you are responsible for keeping your password and user details confidential.\n        Nobody at strucko.com will ever ask you for your password, so please do not trust anybody asking it.\n    "
+        )
+      ]),
+      _vm._v(" "),
+      _c("h3", [_vm._v("Updates to this policy")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        We may update this privacy policy from time-to-time, particularly as technology changes.\n        You can always check this page for the latest version. We may also notify you of changes\n        to our privacy policy by email.\n    "
+        )
+      ]),
+      _vm._v(" "),
+      _c("h2", [_vm._v("Any questions?")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        If you have any questions about this privacy policy or your personal data, please write to us by email.\n    "
+        )
+      ]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v("\n        Marko Ivančić, cicnavi [at] gmail.com\n    ")
+      ]),
+      _vm._v(" "),
+      _c("p", [_vm._v("Last edited on 23 May, 2018 17:58 CET")])
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-21708516", module.exports)
+  }
+}
+
+/***/ }),
+/* 97 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(98)
+}
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(100)
+/* template */
+var __vue_template__ = __webpack_require__(101)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = "data-v-622bc89d"
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/pages/Cookies.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-622bc89d", Component.options)
+  } else {
+    hotAPI.reload("data-v-622bc89d", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 98 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(99);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(2)("2cd13b12", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-622bc89d\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Cookies.vue", function() {
+     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-622bc89d\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Cookies.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 99 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(1)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 100 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    name: "cookies"
+});
+
+/***/ }),
+/* 101 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _c("h2", [_vm._v("Cookie Policy")]),
+    _vm._v(" "),
+    _vm._m(0),
+    _vm._v(" "),
+    _c("h3", [_vm._v("About this Cookie policy")]),
+    _vm._v(" "),
+    _c(
+      "p",
+      [
+        _vm._v(
+          '\n        This Cookie Policy applies to https://strucko.com ("the Website"). In this Cookie Policy,\n        we refer to the Website regardless of how you access the network.\n        By accessing the Website, you agree that this Cookie Policy will apply\n        whenever you access the Website on any device.\n        This Cookie Policy forms part of and is incorporated into our Website Terms Of Use\n        '
+        ),
+        _c(
+          "router-link",
+          { staticClass: "btn btn-sm", attrs: { to: "/tou" } },
+          [_vm._v("TOU")]
+        ),
+        _vm._v(
+          ".\n        Any changes to this policy will be posted here. We reserve the right to\n        vary this Cookie Policy from time to time and such changes shall become\n        effective as soon as they are posted. Your continued use of the Website\n        constitutes your agreement to all such changes.\n    "
+        )
+      ],
+      1
+    ),
+    _vm._v(" "),
+    _c("h3", [_vm._v("Our use of cookies")]),
+    _vm._v(" "),
+    _vm._m(1),
+    _vm._v(" "),
+    _c("h3", [
+      _vm._v(
+        "Types of cookie that may be used during your visit to the Website"
+      )
+    ]),
+    _vm._v(" "),
+    _vm._m(2)
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("p", [
+      _vm._v(
+        "\n        Like most websites, strucko.com uses cookies.\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Cookies are small text files stored on your computer by your browser.\n        They are used for many things, such as remembering whether you have visited\n        the site before, so that you remain logged in - or to help us work out\n        how many new website visitors we get each month. They contain information\n        about the use of your computer but do not include personal information\n        about you (they do not store your name, for instance).\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        This policy explains how cookies are used on Strucko.com website in general\n        - and, below, how you can control the cookies that may be used on this\n        site (not all of them are used on every site).\n    "
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("p", [
+      _vm._v(
+        "\n        We may collect information automatically when you visit the Website, using cookies.\n        The cookies allow us to identify your computer and find out details about your last visit.\n        You can choose, below, not to allow cookies. If you do, we can not guarantee\n        that your experience with the Website will be as good as if you do allow cookies.\n        The information collected by cookies does not personally identify you;\n        it includes general information about your computer settings, your\n        connection to the Internet e.g. operating system and platform,\n        IP address, your browsing patterns and timings of browsing on the\n        Website and your location.\n        Most internet browsers accept cookies automatically, but you can change\n        the settings of your browser to erase cookies or prevent automatic\n        acceptance if you prefer. These links explain how you can control\n        cookies via your browser - remember that if you turn off cookies\n        in your browser then these settings apply to all websites not just this one:\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Internet Explorer http://support.microsoft.com/kb/278835\n        (this page links to further information for different versions of IE -\n        the mobile version is at http:/ /www.microsoft.com/windowsphone/en-us/howto/wp7/web/changing-privacy-and-other-browser-settings.aspx).\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Chrome: http://support.google.com/chrome/bin/answer.py?hl=en-GB&answer=95647\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Safari: http://docs.info.apple.com/article.html?path=Safari/5.0/en/9277.html (or http://support.apple.com/kb/HT1677for mobile versions)\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Firefox: http://support.mozilla.org/en-US/kb/ Enabling%20and%20disabling%20cookies\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Blackberries: http://docs.blackberry.com/en/smartphone_users/deliverables/ 32004/Turn_off_cookies_in_the_browser_60_1072866_11.jsp\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Android: http://support.google.com/mobile/bin/answer.py?hl=en&answer=169022\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Opera: http://www.opera.com/browser/tutorials/security/privacy/\n    "
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("p", [
+      _vm._v(
+        "\n        The following types of cookie are used on this site.\n        We do not list every single cookie used by name - but for each type of\n        cookie we tell you how you can control its use.\n        "
+      ),
+      _c("br"),
+      _c("br"),
+      _vm._v("\n        1. Analytics cookies\n        "),
+      _c("br"),
+      _vm._v(
+        "\n        These monitor how visitors move around the Website and how they reached\n        it. This is used so that we can see total (not individual) figures\n        on which types of content users enjoy most, for instance.\n        You can opt out of these if you want:\n        Google: https://tools.google.com/dlpage/gaoptout\n        Optimizely: https://www.optimizely.com/opt_out/\n        "
+      ),
+      _c("br"),
+      _c("br"),
+      _vm._v("\n        2. Third-party service cookies\n        "),
+      _c("br"),
+      _vm._v(
+        "\n        Social sharing, video and other services we offer are run by other\n        companies. These companies may drop cookies on your computer when you\n        use them on our site or if you are already logged in to them.\n        Here is a list of places where you can find out more about specific\n        services that we may use and their use of cookies:\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Facebooks data use policy: http://www.facebook.com/about/privacy/your-info-on-other\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        AddThis (the service that runs some of our social sharing buttons): http://www.addthis.com/privacy#.T6j--usS0bw\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Twitters privacy policy: https://twitter.com/privacy\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        YouTube video player cookie policy: http://www.google.com/intl/en/policies/privacy/faq/#toc-cookies(Googles standard terms).\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Disqus cookie policy: https://help.disqus.com/customer/portal/articles/466235-use-of-cookies\n        "
+      ),
+      _c("br"),
+      _c("br"),
+      _vm._v(
+        "\n        3. Our own ad serving and management cookies\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        We sell space on our website to advertisers - they pay for the content\n        you enjoy for free.\n        These cookies hold information about the computer - they do not hold\n        personal information about you (ie it is not linked to you as an individual).\n        These are the services we use and how you can control those cookies.\n        Please note that turning off advertising cookies will not mean that you\n        are not served any advertising merely that it will not be tailored to your interests.\n        "
+      ),
+      _c("br"),
+      _vm._v(
+        "\n        Google Adsense (ad partner): Privacy policy at https://support.google.com/adsense/bin/answer.py?hl=en-GB&utm_medium=link&gsessionid=DyXLmLB1J1MxXckh6tX6AQ&utm_campaign=ww-ww-et-asfe_&utm_source=aso&answer=48182 and opt-out via https://www.google.com/settings/ads/onweb/.\n        "
+      ),
+      _c("br"),
+      _c("br"),
+      _vm._v("\n        4. Other ad management cookies\n        "),
+      _c("br"),
+      _vm._v(
+        "\n        Advertisements on the Website are provided by other organisations.\n        Our advertising partners will serve advertisements that they believe\n        are most likely to be of interest to you, based on information about\n        your visit to the Website. In order to do this,\n        our advertising partner may need to place a cookie on your computer.\n        These cookies hold information about the computer - they do not hold\n        personal information about you (ie it is not linked to you as an individual).\n        For more information about this type of online behavioural advertising,\n        about cookies, and about how to turn this feature off,\n        please visit http://www.youronlinechoices.com/uk/\n        "
+      ),
+      _c("br"),
+      _c("br"),
+      _vm._v("\n        5. Site management cookies\n        "),
+      _c("br"),
+      _vm._v(
+        "\n        These are used to maintain your identity or session on the Website.\n        For instance, where our websites run on more than one server, we\n        use a cookie to ensure that you are sent information by one specific\n        server (otherwise you may log in or out unexpectedly). We may use similar\n        cookies when you vote in opinion polls to ensure that you can only vote\n        once, and to ensure that you can use our commenting functionality when not\n        logged in (to ensure you do not see comments you have reported as abusive, for\n        instance, or do not vote comments up/down more than once).\n        These cookies cannot be turned off individually but you could change\n        your browser setting to refuse all cookies (see above) if you do not\n        wish to accept them.\n    "
+      )
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-622bc89d", module.exports)
+  }
+}
+
+/***/ }),
+/* 102 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(103)
+}
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(105)
+/* template */
+var __vue_template__ = __webpack_require__(106)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = "data-v-6bf6c3fd"
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/pages/Disclaimer.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-6bf6c3fd", Component.options)
+  } else {
+    hotAPI.reload("data-v-6bf6c3fd", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 103 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(104);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(2)("9b5c435c", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6bf6c3fd\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Disclaimer.vue", function() {
+     var newContent = require("!!../../../../../node_modules/css-loader/index.js!../../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-6bf6c3fd\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Disclaimer.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 104 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(1)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 105 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    name: "disclaimer"
+});
+
+/***/ }),
+/* 106 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _vm._m(0)
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", [
+      _c("h2", [_vm._v("Disclaimer")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          "\n        While we at strucko.com strive to make the information on this website as\n        timely and accurate as possible, we make no claims, promises, or guarantees\n        about the accuracy, completeness, or adequacy of the contents of this site,\n        and expressly disclaim liability for errors and omissions in the contents of this site.\n        "
+        ),
+        _c("br"),
+        _vm._v(
+          "\n        Strucko services and materials are licensed “as-is.” You bear the risk of using it.\n        Strucko gives no express warranties, guarantees or conditions. You may have\n        additional consumer rights under your local laws which this agreement cannot\n        change. To the extent permitted under your local laws, strucko excludes the\n        implied warranties of merchantability, fitness for a particular purpose and\n        non-infringement. You cannot recover any damages, including consequential,\n        lost profits, special, direct, indirect or incidental damages.\n        "
+        ),
+        _c("br"),
+        _vm._v(
+          "\n        This limitation applies to anything related to the Strucko Services and\n        Materials (including code), and services and content on third party Internet sites,\n        or third party programs\n        or documents; and claims for breach of contract, breach of warranty,\n        guarantee or condition, strict liability, negligence, or other tort\n        to the extent permitted by applicable law. It also applies even if Strucko\n        knew or should have known about the possibility of the damages. The above\n        limitation or exclusion may not apply to you because your country may not\n        allow the exclusion or limitation of incidental, consequential or other damages.\n    "
+        )
+      ])
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-6bf6c3fd", module.exports)
+  }
+}
+
+/***/ }),
+/* 107 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
 
 /***/ })
 /******/ ]);
