@@ -48091,7 +48091,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.loader[data-v-b2659950] {\n    margin: 0 auto;\n    border: 16px solid #f3f3f3; /* Light grey */\n    border-top: 16px solid #3498db; /* Blue */\n    border-radius: 50%;\n    width: 120px;\n    height: 120px;\n    -webkit-animation: spin-data-v-b2659950 2s linear infinite;\n            animation: spin-data-v-b2659950 2s linear infinite;\n}\n@-webkit-keyframes spin-data-v-b2659950 {\n0% { -webkit-transform: rotate(0deg); transform: rotate(0deg);\n}\n100% { -webkit-transform: rotate(360deg); transform: rotate(360deg);\n}\n}\n@keyframes spin-data-v-b2659950 {\n0% { -webkit-transform: rotate(0deg); transform: rotate(0deg);\n}\n100% { -webkit-transform: rotate(360deg); transform: rotate(360deg);\n}\n}\n", ""]);
+exports.push([module.i, "\n.vcenter[data-v-b2659950] {\n  display: inline-block;\n  vertical-align: middle;\n  float: none;\n}\n.loader[data-v-b2659950] {\n        margin: 0 auto;\n        border: 16px solid #f3f3f3; /* Light grey */\n        border-top: 16px solid #3498db; /* Blue */\n        border-radius: 50%;\n        width: 120px;\n        height: 120px;\n        -webkit-animation: spin-data-v-b2659950 2s linear infinite;\n                animation: spin-data-v-b2659950 2s linear infinite;\n}\n@-webkit-keyframes spin-data-v-b2659950 {\n0% { -webkit-transform: rotate(0deg); transform: rotate(0deg);\n}\n100% { -webkit-transform: rotate(360deg); transform: rotate(360deg);\n}\n}\n@keyframes spin-data-v-b2659950 {\n0% { -webkit-transform: rotate(0deg); transform: rotate(0deg);\n}\n100% { -webkit-transform: rotate(360deg); transform: rotate(360deg);\n}\n}\n", ""]);
 
 // exports
 
@@ -48156,6 +48156,19 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -48167,6 +48180,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         };
     },
     methods: {
+        switchLanguages: function switchLanguages() {
+            var languageId = this.languageParams.language_id;
+            var translateTo = this.languageParams.translate_to;
+            this.$store.commit('setLanguageParams', {
+                language_id: translateTo,
+                translate_to: languageId
+            });
+            this.$store.commit('setLettersLoaded', { lettersLoaded: false });
+            this.$store.dispatch('getLettersFromApi');
+            this.resolveRoute();
+        },
         resolveRoute: function resolveRoute() {
             if (this.mode == 'search') {
                 this.$router.push({
@@ -48180,6 +48204,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                     }
                 });
             } else if (this.mode == 'browse') {
+                // Go to front page because of different letters in different lanugages
+                this.$router.push({ name: 'home' });
+                /* TODO implement check for current letter existance in new language
                 this.$router.push({
                     name: 'browse',
                     params: {
@@ -48190,7 +48217,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                     query: {
                         page: 1
                     }
-                });
+                });*/
             }
         }
     },
@@ -48482,7 +48509,7 @@ var render = function() {
         ? _c("div", { staticClass: "row" }, [
             _c("div", { staticClass: "col-xs-12" }, [
               _c("div", { staticClass: "row" }, [
-                _c("div", { staticClass: "col-xs-12 col-sm-6" }, [
+                _c("div", { staticClass: "col-xs-10 col-sm-5 vcenter" }, [
                   _c("div", { staticClass: "form-group" }, [
                     _c("label", [_vm._v("Language")]),
                     _vm._v(" "),
@@ -48559,8 +48586,41 @@ var render = function() {
                     )
                   ])
                 ]),
-                _vm._v(" "),
-                _c("div", { staticClass: "col-xs-12 col-sm-6" }, [
+                _c(
+                  "div",
+                  { staticClass: "col-xs-2 col-sm-2 text-center vcenter" },
+                  [
+                    _c("div", { staticClass: "form-group" }, [
+                      _c("label", [_vm._v(" ")]),
+                      _c("br"),
+                      _vm._v(" "),
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-default",
+                          attrs: {
+                            type: "button",
+                            "aria-label": "Switch Languages",
+                            title: "Switch languages"
+                          },
+                          on: {
+                            click: function($event) {
+                              $event.preventDefault()
+                              return _vm.switchLanguages($event)
+                            }
+                          }
+                        },
+                        [
+                          _c("span", {
+                            staticClass: "glyphicon glyphicon-retweet",
+                            attrs: { "aria-hidden": "true" }
+                          })
+                        ]
+                      )
+                    ])
+                  ]
+                ),
+                _c("div", { staticClass: "col-xs-10 col-sm-5 vcenter" }, [
                   _c("div", { staticClass: "form-group" }, [
                     _c("label", [_vm._v("Translate to")]),
                     _vm._v(" "),

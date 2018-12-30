@@ -4,7 +4,7 @@
             <div class="row" v-if="languagesLoaded">
                 <div class="col-xs-12">
                     <div class="row">
-                        <div class="col-xs-12 col-sm-6">
+                        <div class="col-xs-10 col-sm-5 vcenter">
 
                             <div class="form-group">
                                 <label>Language</label>
@@ -17,9 +17,22 @@
                                   </option>
                                 </select>
                             </div>
-                        </div>
+                        </div><!--
 
-                        <div class="col-xs-12 col-sm-6">
+                        --><div class="col-xs-2 col-sm-2 text-center vcenter">
+                          <div class="form-group">
+                            <label>&nbsp;</label><br>
+                            <button type="button"
+                              class="btn btn-default"
+                              aria-label="Switch Languages"
+                              title="Switch languages"
+                              @click.prevent="switchLanguages">
+                              <span class="glyphicon glyphicon-retweet" aria-hidden="true"></span>
+                            </button>
+                          </div>
+                        </div><!--
+
+                        --><div class="col-xs-10 col-sm-5 vcenter">
                             <div class="form-group">
                                 <label>Translate to</label>
                                 <select class="form-control" v-model="languageParamsTranslateTo" @keyup.enter="go">
@@ -61,6 +74,17 @@
             }
         },
         methods: {
+          switchLanguages() {
+            let languageId = this.languageParams.language_id;
+            let translateTo = this.languageParams.translate_to;
+            this.$store.commit('setLanguageParams', {
+                language_id: translateTo,
+                translate_to: languageId
+            });
+            this.$store.commit('setLettersLoaded', {lettersLoaded: false});
+            this.$store.dispatch('getLettersFromApi');
+            this.resolveRoute();
+          },
           resolveRoute() {
             if (this.mode == 'search') {
               this.$router.push({
@@ -74,6 +98,9 @@
                   }
               });
             } else if (this.mode == 'browse') {
+              // Go to front page because of different letters in different lanugages
+              this.$router.push({name: 'home'});
+              /* TODO implement check for current letter existance in new language
               this.$router.push({
                   name: 'browse',
                   params: {
@@ -84,7 +111,7 @@
                   query: {
                       page: 1
                   }
-              });
+              });*/
             }
           }
         },
@@ -142,6 +169,11 @@
 </script>
 
 <style scoped>
+.vcenter {
+  display: inline-block;
+  vertical-align: middle;
+  float: none;
+}
     .loader {
         margin: 0 auto;
         border: 16px solid #f3f3f3; /* Light grey */
