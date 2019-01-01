@@ -8,14 +8,14 @@
                             <div v-if="results.exactMatch">
                                 <div class="row">
                                     <div class="col-sm-6">
-                                        <p v-if="languagesLoaded == true">
-                                            <strong><em>{{ this.$store.getters.getLanguageById(this.language_id).ref_name }}</em></strong>
-                                        </p>
+                                        <h3 v-if="languagesLoaded == true">
+                                            <em>{{ this.$store.getters.getLanguageById(this.language_id).ref_name }}</em>
+                                        </h3>
                                         <h2>
                                             {{ results.exactMatch.term }}
                                             <small>
                                                 <em>
-                                                    {{ results.exactMatch.part_of_speech.part_of_speech.toLowerCase() }}
+                                                    ({{ results.exactMatch.part_of_speech.part_of_speech.toLowerCase() }})
                                                 </em>
                                             </small>
                                         </h2>
@@ -29,21 +29,26 @@
                                         </p>
                                     </div>
                                     <div class="col-sm-6">
-                                        <p v-if="languagesLoaded == true">
-                                            <strong><em>{{ this.$store.getters.getLanguageById(this.translate_to).ref_name }}</em></strong>
-                                        </p>
-                                        <div v-for="(translation, index) in results.exactMatch.translations">
-                                            <h2>
-                                                {{ translation.translation.term }}
-                                            </h2>
-                                            <p v-for="definition in translation.translation.definitions">
-                                                {{ definition.definition }}
-                                                <small style="font-style: italic;">
-                                                    <a :href="definition.link" :title="definition.source" target="_blank">
-                                                        source
-                                                    </a>
-                                                </small>
-                                            </p>
+                                        <h3 v-if="languagesLoaded == true">
+                                            <em>{{ this.$store.getters.getLanguageById(this.translate_to).ref_name }}</em>
+                                        </h3>
+                                        <div v-if="results.exactMatch.translations.length > 0">
+                                            <div v-for="(translation, index) in results.exactMatch.translations">
+                                                <h2>
+                                                    {{ translation.translation.term }}
+                                                </h2>
+                                                <p v-for="definition in translation.translation.definitions">
+                                                    {{ definition.definition }}
+                                                    <small style="font-style: italic;">
+                                                        <a :href="definition.link" :title="definition.source" target="_blank">
+                                                            source
+                                                        </a>
+                                                    </small>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div v-else>
+                                            <p class="text-info">No translations...</p>
                                         </div>
                                     </div>
                                 </div>
@@ -54,7 +59,7 @@
                                 </div>
                             </div>
                             <div v-else class="text-info text-center">
-                                    <h4>No results...</h4>
+                                <h4>No results...</h4>
                             </div>
                         </div>
                     </div>
@@ -66,6 +71,11 @@
                             <h4>Similar terms</h4>
                             <p v-for="(term, index) in results.similarTerms">
                                 {{ term.term }}
+                                <small>
+                                    <em>
+                                        ({{ term.part_of_speech.part_of_speech.toLowerCase() }})
+                                    </em>
+                                </small>
                                 <em v-for="(translation, index) in term.translations">
                                     {{ translation.translation.term }}<span v-if="index != (term.translations.length - 1)">,</span>
                                 </em>

@@ -34,7 +34,7 @@ class SearchController extends Controller
 		    ->inRandomOrder()
 		    ->orderBy('votes_sum', 'desc')
 		    ->withTranslations($request->get('translate_to'))
-		    ->with('definitions')
+		    ->with('definitions', 'partOfSpeech')
 		    ->limit(5)
 		    ->get();
 

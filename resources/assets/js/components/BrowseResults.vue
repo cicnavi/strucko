@@ -28,6 +28,11 @@
                                               <tr v-for="(term, index) in results.data">
                                                 <td>
                                                   {{ term.term}}
+                                                  <small>
+                                                      <em>
+                                                          ({{ term.part_of_speech.part_of_speech.toLowerCase() }})
+                                                      </em>
+                                                  </small>
                                                   <span v-if="term.translations.length > 0">
                                                     /
                                                     <span v-for="(translation, index) in term.translations">

@@ -48823,7 +48823,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -48838,6 +48838,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__LoaderAnimation___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__LoaderAnimation__);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -49043,17 +49053,15 @@ var render = function() {
                             { staticClass: "col-sm-6" },
                             [
                               _vm.languagesLoaded == true
-                                ? _c("p", [
-                                    _c("strong", [
-                                      _c("em", [
-                                        _vm._v(
-                                          _vm._s(
-                                            this.$store.getters.getLanguageById(
-                                              this.language_id
-                                            ).ref_name
-                                          )
+                                ? _c("h3", [
+                                    _c("em", [
+                                      _vm._v(
+                                        _vm._s(
+                                          this.$store.getters.getLanguageById(
+                                            this.language_id
+                                          ).ref_name
                                         )
-                                      ])
+                                      )
                                     ])
                                   ])
                                 : _vm._e(),
@@ -49067,11 +49075,11 @@ var render = function() {
                                 _c("small", [
                                   _c("em", [
                                     _vm._v(
-                                      "\n                                                " +
+                                      "\n                                                (" +
                                         _vm._s(
                                           _vm.results.exactMatch.part_of_speech.part_of_speech.toLowerCase()
                                         ) +
-                                        "\n                                            "
+                                        ")\n                                            "
                                     )
                                   ])
                                 ])
@@ -49116,87 +49124,93 @@ var render = function() {
                             2
                           ),
                           _vm._v(" "),
-                          _c(
-                            "div",
-                            { staticClass: "col-sm-6" },
-                            [
-                              _vm.languagesLoaded == true
-                                ? _c("p", [
-                                    _c("strong", [
-                                      _c("em", [
-                                        _vm._v(
-                                          _vm._s(
-                                            this.$store.getters.getLanguageById(
-                                              this.translate_to
-                                            ).ref_name
-                                          )
-                                        )
-                                      ])
-                                    ])
+                          _c("div", { staticClass: "col-sm-6" }, [
+                            _vm.languagesLoaded == true
+                              ? _c("h3", [
+                                  _c("em", [
+                                    _vm._v(
+                                      _vm._s(
+                                        this.$store.getters.getLanguageById(
+                                          this.translate_to
+                                        ).ref_name
+                                      )
+                                    )
                                   ])
-                                : _vm._e(),
-                              _vm._v(" "),
-                              _vm._l(
-                                _vm.results.exactMatch.translations,
-                                function(translation, index) {
-                                  return _c(
-                                    "div",
-                                    [
-                                      _c("h2", [
-                                        _vm._v(
-                                          "\n                                            " +
-                                            _vm._s(
-                                              translation.translation.term
-                                            ) +
-                                            "\n                                        "
-                                        )
-                                      ]),
-                                      _vm._v(" "),
-                                      _vm._l(
-                                        translation.translation.definitions,
-                                        function(definition) {
-                                          return _c("p", [
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _vm.results.exactMatch.translations.length > 0
+                              ? _c(
+                                  "div",
+                                  _vm._l(
+                                    _vm.results.exactMatch.translations,
+                                    function(translation, index) {
+                                      return _c(
+                                        "div",
+                                        [
+                                          _c("h2", [
                                             _vm._v(
-                                              "\n                                            " +
-                                                _vm._s(definition.definition) +
+                                              "\n                                                " +
+                                                _vm._s(
+                                                  translation.translation.term
+                                                ) +
                                                 "\n                                            "
-                                            ),
-                                            _c(
-                                              "small",
-                                              {
-                                                staticStyle: {
-                                                  "font-style": "italic"
-                                                }
-                                              },
-                                              [
+                                            )
+                                          ]),
+                                          _vm._v(" "),
+                                          _vm._l(
+                                            translation.translation.definitions,
+                                            function(definition) {
+                                              return _c("p", [
+                                                _vm._v(
+                                                  "\n                                                " +
+                                                    _vm._s(
+                                                      definition.definition
+                                                    ) +
+                                                    "\n                                                "
+                                                ),
                                                 _c(
-                                                  "a",
+                                                  "small",
                                                   {
-                                                    attrs: {
-                                                      href: definition.link,
-                                                      title: definition.source,
-                                                      target: "_blank"
+                                                    staticStyle: {
+                                                      "font-style": "italic"
                                                     }
                                                   },
                                                   [
-                                                    _vm._v(
-                                                      "\n                                                    source\n                                                "
+                                                    _c(
+                                                      "a",
+                                                      {
+                                                        attrs: {
+                                                          href: definition.link,
+                                                          title:
+                                                            definition.source,
+                                                          target: "_blank"
+                                                        }
+                                                      },
+                                                      [
+                                                        _vm._v(
+                                                          "\n                                                        source\n                                                    "
+                                                        )
+                                                      ]
                                                     )
                                                   ]
                                                 )
-                                              ]
-                                            )
-                                          ])
-                                        }
+                                              ])
+                                            }
+                                          )
+                                        ],
+                                        2
                                       )
-                                    ],
-                                    2
-                                  )
-                                }
-                              )
-                            ],
-                            2
-                          )
+                                    }
+                                  ),
+                                  0
+                                )
+                              : _c("div", [
+                                  _c("p", { staticClass: "text-info" }, [
+                                    _vm._v("No translations...")
+                                  ])
+                                ])
+                          ])
                         ]),
                         _vm._v(" "),
                         _vm._m(0)
@@ -49226,6 +49240,18 @@ var render = function() {
                                   _vm._s(term.term) +
                                   "\n                            "
                               ),
+                              _c("small", [
+                                _c("em", [
+                                  _vm._v(
+                                    "\n                                    (" +
+                                      _vm._s(
+                                        term.part_of_speech.part_of_speech.toLowerCase()
+                                      ) +
+                                      ")\n                                "
+                                  )
+                                ])
+                              ]),
+                              _vm._v(" "),
                               _vm._l(term.translations, function(
                                 translation,
                                 index
@@ -49715,7 +49741,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -49730,6 +49756,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__LoaderAnimation___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__LoaderAnimation__);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+//
+//
+//
+//
+//
 //
 //
 //
@@ -50029,6 +50060,18 @@ var render = function() {
                                               _vm._s(term.term) +
                                               "\n                                              "
                                           ),
+                                          _c("small", [
+                                            _c("em", [
+                                              _vm._v(
+                                                "\n                                                      (" +
+                                                  _vm._s(
+                                                    term.part_of_speech.part_of_speech.toLowerCase()
+                                                  ) +
+                                                  ")\n                                                  "
+                                              )
+                                            ])
+                                          ]),
+                                          _vm._v(" "),
                                           term.translations.length > 0
                                             ? _c(
                                                 "span",
