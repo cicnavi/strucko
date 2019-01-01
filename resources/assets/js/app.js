@@ -45,3 +45,14 @@ const app = new Vue({
           });
     }
 });
+// TODO implement other data when defining event
+// https://developers.google.com/analytics/devguides/collection/analyticsjs/events
+if (typeof ga === 'function') {
+    ga('set', 'page', router.currentRoute.path);
+    ga('send', 'pageview');
+
+    router.afterEach(( to, from ) => {
+      ga('set', 'page', to.path);
+      ga('send', 'pageview');
+    });
+}
