@@ -4,7 +4,7 @@
 
             <div class="row">
                 <div class="col-xs-12">
-                    <languages-form></languages-form>
+                    <languages-form :setMode="setMode"></languages-form>
                 </div>
             </div>
 
@@ -23,8 +23,7 @@
 
             <div class="row">
                 <div class="col-xs-12" v-if="status.xhrInProgress">
-                    <p class="text-center">Loading...</p>
-                    <div class="loader"></div>
+                    <loader-animation></loader-animation>
                 </div>
                 <div class="col-xs-12" v-else>
                     <router-view :setMode="setMode"></router-view>
@@ -39,6 +38,7 @@
     import LanguagesForm from './LanguagesForm';
     import SearchForm from './SearchForm';
     import BrowseForm from './BrowseForm';
+    import LoaderAnimation from './LoaderAnimation';
     export default {
         name: "Home",
         data: function () {
@@ -54,12 +54,15 @@
             }
         },
         components: {
-            LanguagesForm, SearchForm, BrowseForm
+            LanguagesForm, SearchForm, BrowseForm, LoaderAnimation
         },
         computed: {
             mode() {
                 return this.$store.state.mode;
             }
+        },
+        mounted() {
+            this.setMode('start');
         }
     }
 </script>

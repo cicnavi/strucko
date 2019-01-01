@@ -53,8 +53,7 @@
 
             <div class="row" v-else>
                 <div class="col-xs-12">
-                    <p class="text-center">Please wait while we prepare data...</p>
-                    <div class="loader"></div>
+                    <loader-animation></loader-animation>
                 </div>
             </div>
 
@@ -64,15 +63,22 @@
 </template>
 
 <script>
-    import LanguagesSelectInput from './form-elements/LanguagesSelectInput';
+
+    import LoaderAnimation from './LoaderAnimation';
 
     export default {
         name: "languages-form",
         data: function () {
             return {
-                name: 'languages-form'
+
             }
         },
+        components: {
+            LoaderAnimation
+        },
+        props: [
+            'setMode'
+        ],
         methods: {
           switchLanguages() {
             let languageId = this.languageParams.language_id;
@@ -98,8 +104,10 @@
                   }
               });
             } else if (this.mode == 'browse') {
-              // Go to front page because of different letters in different lanugages
-              this.$router.push({name: 'home'});
+
+                // Go to front page because of different letters in different lanugages
+                this.setMode('start');
+                this.$router.push({name: 'home'});
               /* TODO implement check for current letter existance in new language
               this.$router.push({
                   name: 'browse',
@@ -114,9 +122,6 @@
               });*/
             }
           }
-        },
-        components: {
-            LanguagesSelectInput
         },
         computed: {
             mode() {
@@ -169,23 +174,9 @@
 </script>
 
 <style scoped>
-.vcenter {
-  display: inline-block;
-  vertical-align: middle;
-  float: none;
-}
-    .loader {
-        margin: 0 auto;
-        border: 16px solid #f3f3f3; /* Light grey */
-        border-top: 16px solid #3498db; /* Blue */
-        border-radius: 50%;
-        width: 120px;
-        height: 120px;
-        animation: spin 2s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+    .vcenter {
+      display: inline-block;
+      vertical-align: middle;
+      float: none;
     }
 </style>
