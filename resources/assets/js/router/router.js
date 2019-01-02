@@ -15,9 +15,15 @@ import Cookies from '../components/pages/Cookies';
 import Disclaimer from '../components/pages/Disclaimer';
 
 export const router = new VueRouter({
+    mode: 'history',
     linkActiveClass: 'active',
     scrollBehavior (to, from, savedPosition) {
-        if (savedPosition) {
+        if (to.hash) {
+            return {
+              selector: to.hash
+            }
+        }
+        else if (savedPosition) {
             return savedPosition
         } else {
             return { x: 0, y: 0 }

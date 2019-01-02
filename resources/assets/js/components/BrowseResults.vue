@@ -1,6 +1,6 @@
 <template>
     <div class="row">
-        <div class="col-xs-12">
+        <div class="col-xs-12" id="browseResults">
             <div class="row" v-if="! status.error && ! browseInProgress">
                 <div class="col-xs-12">
                     <div class="row" >

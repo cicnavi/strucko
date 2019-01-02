@@ -52,7 +52,7 @@ if (typeof ga === 'function') {
     ga('send', 'pageview');
 
     router.afterEach(( to, from ) => {
-      ga('set', 'page', to.path);
-      ga('send', 'pageview');
+        ga('set', 'page', to.fullPath);
+        ga('send', 'pageview');
     });
 }

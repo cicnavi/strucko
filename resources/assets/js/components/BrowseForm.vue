@@ -1,6 +1,6 @@
 <template>
     <div class="row">
-        <div class="col-xs-12">
+        <div class="col-xs-12" id="browseForm">
             <div class="row" v-if="lettersLoaded">
                 <div class="col-xs-12">
                     <button type="button"
@@ -86,5 +86,5 @@
 </script>
 
 <style scoped>
-  
+
 </style>
