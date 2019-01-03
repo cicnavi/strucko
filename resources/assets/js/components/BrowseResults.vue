@@ -140,7 +140,7 @@
                 results: {
                     total: 0
                 },
-                currentPage: this.page
+                currentPage: this.page || 1
             }
         },
         props: ['language_id', 'translate_to', 'letter', 'page', 'setMode'],
@@ -178,7 +178,7 @@
               });
             },
             browse() {
-                this.currentPage = this.page;
+                this.currentPage = this.page || 1;
                 this.setBrowseParams();
                 this.setLanguageParams();
                 this.setMode('browse');
