@@ -48,6 +48,32 @@
                 }
             }
         },
+        metaInfo () {
+          return {
+                // if no subcomponents specify a metaInfo.title, this title will be used
+                title: 'Home',
+                // all titles will be injected into this template
+                titleTemplate: '%s | Strucko IT Dictionary',
+                meta: [
+                    {
+                        name: 'description',
+                        content: 'Multilingual Information Technology Dictionary.',
+                        vmid: 'description'
+                    },
+                    {
+                        'property': 'og:title',
+                        'content': 'Home',
+                        'template': chunk => `${chunk} | Strucko IT Dictionary`, //or as string template: '%s - My page',
+                        'vmid': 'og:title'
+                    },
+                    {
+                        'property': 'og:description',
+                        'content': 'Multilingual Information Technology Dictionary.',
+                        'vmid': 'og:description'
+                    }
+                ]
+          }
+        },
         methods: {
             setMode(mode) {
                 this.$store.commit('setMode', mode);

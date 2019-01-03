@@ -140,8 +140,36 @@
                 results: {
                     total: 0
                 },
-                currentPage: this.page || 1
+                currentPage: this.page || 1,
+                meta: {
+                    title: 'Browsing | ' + this.language_id + ' | ' + this.letter + ' | ' + this.translate_to,
+                    description: 'Browsing language ' + this.language_id + ', letter ' +
+                        this.letter + ', translated to ' + this.translate_to + ', page ' + this.currentPage
+                }
             }
+        },
+        metaInfo () {
+          return {
+                // if no subcomponents specify a metaInfo.title, this title will be used
+                title: this.meta.title,
+                meta: [
+                    {
+                        name: 'description',
+                        content: this.meta.description,
+                        vmid: 'description'
+                    },
+                    {
+                        'property': 'og:title',
+                        'content': this.meta.title,
+                        'vmid': 'og:title'
+                    },
+                    {
+                        'property': 'og:description',
+                        'content': this.meta.description,
+                        'vmid': 'og:description'
+                    }
+                ]
+          }
         },
         props: ['language_id', 'translate_to', 'letter', 'page', 'setMode'],
         methods: {

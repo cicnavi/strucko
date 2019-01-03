@@ -121,8 +121,36 @@
                 results: {
                     exactMatch: null,
                     similarTerms: []
+                },
+                meta: {
+                    title: 'Search | ' + this.language_id + ' | ' + this.translate_to + ' | ' + this.term,
+                    description: 'Search language ' + this.language_id + ', translated to ' +
+                        this.translate_to + ', for term ' + this.term
                 }
             }
+        },
+        metaInfo () {
+          return {
+                // if no subcomponents specify a metaInfo.title, this title will be used
+                title: this.meta.title,
+                meta: [
+                    {
+                        name: 'description',
+                        content: this.meta.description,
+                        vmid: 'description'
+                    },
+                    {
+                        'property': 'og:title',
+                        'content': this.meta.title,
+                        'vmid': 'og:title'
+                    },
+                    {
+                        'property': 'og:description',
+                        'content': this.meta.description,
+                        'vmid': 'og:description'
+                    }
+                ]
+          }
         },
         props: ['language_id', 'translate_to', 'term', 'setMode'],
         methods: {
