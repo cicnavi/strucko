@@ -40,7 +40,7 @@ class GenerateSitemap extends Command
      */
     public function handle()
     {
-        $sitemapFileName = 'sitemap.txt';
+        $sitemapFileName = 'public' . DIRECTORY_SEPARATOR . 'sitemap.txt';
         // Remove all previous entries.
         Storage::delete($sitemapFileName);
 
@@ -53,6 +53,9 @@ class GenerateSitemap extends Command
             $letters = $this->getLetters($language->id);
             foreach ($letters as $letter) {
                 foreach($languages as $translateTo) {
+                    if ($language->id == $translateTo->id) {
+                        continue;
+                    }
                     $url = $hostname . "browse/$language->id/$letter->letter/$translateTo->id";
                     Storage::append($sitemapFileName, $url);
                 }
