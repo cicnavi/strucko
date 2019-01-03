@@ -40,15 +40,22 @@ class GenerateSitemap extends Command
      */
     public function handle()
     {
-        $sitemapFileName = 'public' . DIRECTORY_SEPARATOR . 'sitemap.txt';
+        $directory = 'public' . DIRECTORY_SEPARATOR . 'sitemaps';
+        $file = 'sitemap-';
+        $fileNumber = 1;
+        $extension = '.txt';
+
         // Remove all previous entries.
-        Storage::delete($sitemapFileName);
+        Storage::deleteDirectory($directory);
 
         $hostname = 'https://strucko.com/';
+        $sitemapFileName = $directory . DIRECTORY_SEPARATOR . $file . $fileNumber . $extension;
         Storage::append($sitemapFileName, $hostname);
 
         $languages = $this->getLanguages();
 
+        $maxEntries = 50000;
+        $counter = 1;
         foreach ($languages as $language) {
             $letters = $this->getLetters($language->id);
             foreach ($letters as $letter) {
@@ -56,12 +63,17 @@ class GenerateSitemap extends Command
                     if ($language->id == $translateTo->id) {
                         continue;
                     }
+                    if (++$counter % $maxEntries == 0) {
+                        $this->info('Finished file ' . $fileNumber);
+                        $fileNumber++;
+                    }
                     $url = $hostname . "browse/$language->id/$letter->letter/$translateTo->id";
+                    $sitemapFileName = $directory . DIRECTORY_SEPARATOR . $file . $fileNumber . $extension;
                     Storage::append($sitemapFileName, $url);
                 }
             }
         }
-
+        $this->info('Finished all files');
     }
 
     protected function getLanguages()
