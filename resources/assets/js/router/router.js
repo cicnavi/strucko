@@ -13,6 +13,7 @@ import TermsOfUse from '../components/pages/TermsOfUse';
 import Privacy from '../components/pages/Privacy';
 import Cookies from '../components/pages/Cookies';
 import Disclaimer from '../components/pages/Disclaimer';
+import NotFound from '../components/pages/NotFound';
 
 export const router = new VueRouter({
     mode: 'history',
@@ -67,6 +68,7 @@ export const router = new VueRouter({
         {path: '/privacy', name: 'privacy', component: Privacy},
         {path: '/cookies', name: 'cookies', component: Cookies},
         {path: '/disclaimer', name: 'disclaimer', component: Disclaimer},
+        {path: '/*', name: 'not-found', component: NotFound},
     ],
 
 });
